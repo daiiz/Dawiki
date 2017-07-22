@@ -1,0 +1,8 @@
+{
+  "name": "dawiki",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:daiz713/Dawiki.git",
+  "author": "daiiz <da.iz.mg@gmail.com>",
+  "license": "MIT"
+}
