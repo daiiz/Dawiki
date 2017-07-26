@@ -13,12 +13,18 @@
         color: #555;
         font-size: 15px;
         line-height: 25px;
+        padding-left: 4px;
       }
 
       .title {
         font-size: 28px !important;
         line-height: 38px !important;
         margin-bottom: 6px;
+      }
+
+      .gray {
+        background-color: #efefef;
+        border-radius: 1px;
       }
     </style>
     <div id="line">
@@ -32,16 +38,17 @@
       static get is () { return 'dawiki-line' }
       static get properties () {
         return {
-          raw: {type: String, value: ''},
-          istitle: {type: Boolean, value: false}
+          raw    : {type: String, value: ''},
+          istitle: {type: Boolean, value: false},
+          /* 行の背景色 */
+          gray   : {type: Boolean, value: false},
         }
       }
 
       ready () {
         super.ready();
-        if (JSON.parse(this.istitle)) {
-          this.$.line.className += 'title';
-        }
+        if (JSON.parse(this.istitle)) this.$.line.className += ' title';
+        if (JSON.parse(this.gray)) this.$.line.className += ' gray';
       }
     }
     window.customElements.define(DawikiLine.is, DawikiLine);
