@@ -1,0 +1,6 @@
+{
+  "name": "dawiki",
+  "short_name": "dawiki",
+  "start_url": "/",
+  "display": "standalone"
+}
