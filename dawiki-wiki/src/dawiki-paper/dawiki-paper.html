@@ -1,0 +1,25 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="dawiki-paper">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <div>
+      daiiz
+    </div>
+  </template>
+
+  <script src="../../dist/bundle.js"></script>
+  <script>
+    class DawikiPaper extends Polymer.Element {
+      static get is () { return 'dawiki-paper' }
+      static get properties () {
+        return {}
+      }
+    }
+    window.customElements.define(DawikiPaper.is, DawikiPaper);
+  </script>
+</dom-module>

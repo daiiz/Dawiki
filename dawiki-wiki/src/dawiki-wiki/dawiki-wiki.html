@@ -1,0 +1,30 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../dawiki-paper/dawiki-paper.html">
+
+<dom-module id="dawiki-wiki">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]!</h2>
+    <dawiki-paper></dawiki-paper>
+  </template>
+
+  <script src="../../dist/bundle.js"></script>
+  <script>
+    class DawikiWiki extends Polymer.Element {
+      static get is () { return 'dawiki-wiki' }
+      static get properties () {
+        return {
+          prop1: {
+            type: String,
+            value: 'dawiki-wiki'
+          }
+        }
+      }
+    }
+    window.customElements.define(DawikiWiki.is, DawikiWiki);
+  </script>
+</dom-module>

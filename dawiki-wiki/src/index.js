@@ -1,0 +1,1 @@
+const dawikiWiki = require('./dawiki-wiki/dawiki-wiki');
