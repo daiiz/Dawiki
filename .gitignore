@@ -1,3 +1,6 @@
+**/bower_components/*
+**/bundle.js
+
 ### https://raw.github.com/github/gitignore/7e04a3f05c5b913b5767ca88fc61734494ca97e2/Node.gitignore
 
 # Logs
@@ -42,7 +45,8 @@ node_modules
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
