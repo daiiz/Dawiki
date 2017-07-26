@@ -4,5 +4,29 @@
   "main": "index.js",
   "repository": "git@github.com:daiz713/Dawiki.git",
   "author": "daiiz <da.iz.mg@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node-dev app.js",
+    "test": "standard ./dawiki-wiki/src/**/*js --fix",
+    "watch": "watchify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js -v"
+  },
+  "dependencies": {
+    "argv": "^0.0.2",
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "jquery": "^3.2.1",
+    "socket.io": "^2.0.3",
+    "socket.io-client": "^2.0.3",
+    "socket.io-request": "^0.3.1",
+    "superagent": "^3.5.2",
+    "unirest": "^0.5.1"
+  },
+  "devDependencies": {
+    "ava": "^0.20.0",
+    "standard": "^10.0.2",
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "watchify": "^3.9.0"
+  }
 }
