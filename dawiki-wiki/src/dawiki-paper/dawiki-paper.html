@@ -1,14 +1,43 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../dawiki-line/dawiki-line.html">
 
 <dom-module id="dawiki-paper">
   <template>
+    <link rel="stylesheet" href="/dawiki-wiki/bower_components/material-design-lite/material.min.css">
+    <script src="/dawiki-wiki/bower_components/material-design-lite/material.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
       :host {
         display: block;
       }
+      
+      .stage {
+        width: 100%;
+        min-height: 50px;
+      }
+
+      #paper {
+        width: 95%;
+        max-width: 945px;
+        background-color: #fff;
+        margin: auto;
+        box-sizing: border-box;
+      }
+
+      .editor {
+        margin: 32px;
+        cursor: text;
+      }
     </style>
-    <div>
-      daiiz
+    <div class="stage">
+      <div id="paper" class="mdl-card mdl-shadow--2dp">
+        <div class="editor">
+          <dawiki-line raw="タイトル" istitle></dawiki-line>
+          <dawiki-line raw="ここはdaiiz [apps]"></dawiki-line>
+          <dawiki-line raw="[Wiki]づくりに挑戦中"></dawiki-line>
+          <dawiki-line raw="どうしても[Scrapbox]のデザインを意識してしまう"></dawiki-line>
+        </div>
+      </div>
     </div>
   </template>
 

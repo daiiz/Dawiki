@@ -3,12 +3,32 @@
 <dom-module id="dawiki-head">
   <template>
     <style>
+      @import url(https://fonts.googleapis.com/earlyaccess/notosansjapanese.css);
       :host {
+        font-family: 'Noto Sans Japanese', sans-serif;
         display: block;
+      }
+
+      .header {
+        width: 100%;
+        height: 50px;
+        top: 0px;
+        position: relative;
+        z-index: 1000;
+        box-sizing: border-box;
+        background-color: #FFC107;
+      }
+
+      .wiki-title {
+        display: inline-block;
+        font-size: 18px;
+        padding: 11px;
+        padding-left: 22px;
+        color: #333;
       }
     </style>
     <div class="header">
-      daiizHead
+      <div class="wiki-title">[[wikiTitle]]</div>
     </div>
   </template>
 
@@ -17,7 +37,9 @@
     class DawikiHead extends Polymer.Element {
       static get is () { return 'dawiki-head' }
       static get properties () {
-        return {}
+        return {
+          wikiTitle: {type: String, value:"dawiki"}
+        }
       }
     }
     window.customElements.define(DawikiHead.is, DawikiHead);

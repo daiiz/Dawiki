@@ -1,0 +1,49 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="dawiki-line">
+  <template>
+    <style>
+      @import url(https://fonts.googleapis.com/earlyaccess/notosansjapanese.css);
+      :host {
+        font-family: 'Noto Sans Japanese', sans-serif;
+        display: block;
+      }
+
+      #line {
+        color: #555;
+        font-size: 15px;
+        line-height: 25px;
+      }
+
+      .title {
+        font-size: 28px !important;
+        line-height: 38px !important;
+        margin-bottom: 6px;
+      }
+    </style>
+    <div id="line">
+      [[raw]]
+    </div>
+  </template>
+
+  <script src="../../dist/bundle.js"></script>
+  <script>
+    class DawikiLine extends Polymer.Element {
+      static get is () { return 'dawiki-line' }
+      static get properties () {
+        return {
+          raw: {type: String, value: ''},
+          istitle: {type: Boolean, value: false}
+        }
+      }
+
+      ready () {
+        super.ready();
+        if (JSON.parse(this.istitle)) {
+          this.$.line.className += 'title';
+        }
+      }
+    }
+    window.customElements.define(DawikiLine.is, DawikiLine);
+  </script>
+</dom-module>
