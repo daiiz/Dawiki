@@ -1,4 +1,6 @@
 const $ = require('jquery')
+const ENTER = 13
+const TAB = 9
 
 window.a = () => { console.log(888) }
 window.dawiki = window.dawiki || {}
@@ -24,9 +26,13 @@ window.dawiki.css = (elem, styles) => {
 }
 
 window.dawiki.initTextarea = (elem) => {
+  $(elem).on('keydown', e => {
+    if (e.which === TAB) return false
+  })
+
   $(elem).on('keypress', e => {
-    if (e.which === 13) {
-      // 改行
+    if (e.which === ENTER) { // || e.which === ARROW_UP || e.which === ARROW_DOWN) {
+      // 改行またはタブ文字
       return false
     }
   }).bind('blur', function () {

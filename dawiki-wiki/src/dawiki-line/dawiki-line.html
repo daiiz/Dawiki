@@ -34,7 +34,7 @@
       .title {
         font-size: 28px !important;
         line-height: 38px !important;
-        margin-bottom: 6px;
+        margin-bottom: 12px;
       }
 
       textarea:focus {
@@ -44,7 +44,7 @@
     </style>
     <div id="line" on-click="_fireupdateLineHighlight"></div>
     <textarea id="editor" type="text" spellcheck="false" 
-      on-keyup="updateRawArrow" on-keypress="updateRawEnter"></textarea>
+      on-keydown="checkKeyDown" on-keyup="updateRaw" on-keypress="updateRawEnter"></textarea>
   </template>
 
   <script src="../../dist/bundle.js"></script>
@@ -58,9 +58,19 @@
             value: '',
             observer: '_rawChanged'
           },
+          caret: {
+            type: Number,
+            value: 0,
+            observer: '_caretChanged'
+          },
           id     : {type: String, value: ''},
           hash   : {type: String, value: ''},
           istitle: {type: Boolean, value: false},
+          /* IMEに矢印キーを乗っ取られているときは矢印機能をロックする */
+          arrowLocked: {
+            type: Boolean,
+            value: false
+          },
           /* 行の背景色 */
           bgcolor   : {
             type: String, 
@@ -80,21 +90,42 @@
         }
       }
 
-      updateRawArrow (e) {
+      checkKeyDown (e) {
+        var keyCode = e.keyCode;
+        // IMEの候補を矢印キーで操作しているときは keyCode=229
+        if (keyCode === 229) {
+          this.arrowLocked = true;
+        }else {
+          this.arrowLocked = false;
+        }
+      }
+
+      updateRaw (e) {
         var editor = this.$.editor;
         var keyCode = e.code;
         var txt = editor.value;
-        
-        if (keyCode === 'ArrowDown') {
-          this.fireupdateLineHighlight(false, true);
-          return;
-        }
+        var diff = Math.abs(this.raw - txt);
 
-        if (keyCode === 'ArrowUp') {
-          this.fireupdateLineHighlight(true, false);
-          return;
+        if (!this.arrowLocked) {
+          if (keyCode === 'ArrowDown') {
+            this._setCaretPosition(this.raw.length);  //
+            this.fireupdateLineHighlight(false, true, this._getCaretPosition());
+            return;
+          }
+
+          if (keyCode === 'ArrowUp') {
+            this._setCaretPosition(this.raw.length);  //
+            this.fireupdateLineHighlight(true, false, this._getCaretPosition());
+            return;
+          }
         }
+        
         this.raw = txt;
+        if (keyCode === 'Backspace') {
+          if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
+            this.fireCombineWithLine(true, false, this.raw);
+          }
+        }
       }
 
       updateRawEnter (e) {
@@ -104,32 +135,21 @@
 
         if (keyCode === 'Enter') {
           // 新たな行の追加要求する
-          var caretPos = editor.selectionEnd;
+          var caretPos = this._getCaretPosition();
           var tailTxt = txt.substring(caretPos, txt.length);
           var headTxt = txt.substring(0, caretPos);
           this.raw = headTxt;
-
-          this.dispatchEvent(new CustomEvent('insertLine', {
-            detail: {
-              line_after: this,
-              body: tailTxt,
-              caret_position: caretPos
-            },
-            bubbles: true, 
-            composed: true
-          }));
+          this.fireInsertLine(caretPos, tailTxt);
           return;
         }
 
         this.raw = txt;
       }
 
-      setEditMode () {
+      setEditMode (caret=0) {
         var editor = this.$.editor;
-        editor.selectionEnd = 3; // 3文字目の後ろにcaret
-        editor.selectionStart = 3;
-
         var h = this.$.line.offsetHeight;
+
         dawiki.css(this.$.line, {
           display: 'none'
         });
@@ -138,17 +158,45 @@
           display: 'block'
         });
         editor.focus();
+        this._setCaretPosition(caret);
         //this._fireupdateLineHighlight();
       }
 
       setViewMode () {
-        this.$.editor.selectionEnd = this.$.editor.value.length;
-        dawiki.css(this.$.editor, {
+        var editor = this.$.editor;
+        editor.blur();
+        dawiki.css(editor, {
           display: 'none'
         });
         dawiki.css(this.$.line, {
           display: 'block'
         });
+      }
+
+      /* private methods */
+      _getCaretPosition () {
+        return this.$.editor.selectionEnd;
+      }
+
+      _setCaretPosition (pos=0) {
+        var editor = this.$.editor;
+        pos = Math.max(pos, 0);
+        editor.selectionStart = pos;
+        editor.selectionEnd = pos;
+      }
+
+      _spans (str) {
+        this.$.line.innerHTML = '';
+        this.$.line.appendChild(dawiki.spans(str.replace(/\[/g, '').replace(/\]/g, '')));
+      }
+
+      _fireupdateLineHighlight (e) {
+        this.fireupdateLineHighlight(false, false, this.raw.length);
+      }
+
+      /* prop observers */
+      _caretChanged (newValue, oldValue) {
+        this._setCaretPosition(newValue);
       }
 
       _bgcolorChanged (newValue, oldValue) {
@@ -158,27 +206,44 @@
       _rawChanged (newValue, oldValue) {
         var editor = this.$.editor;
         this._spans(newValue);
-        if (editor.value !== newValue) {
-          editor.value = newValue;
-        }
+        if (editor.value === newValue) return;
+        editor.value = newValue;
       }
 
-      _spans (str) {
-        this.$.line.innerHTML = '';
-        this.$.line.appendChild(dawiki.spans(str.replace(/\[/g, '').replace(/\]/g, '')));
-      }
-
-      _fireupdateLineHighlight (e) {
-        this.fireupdateLineHighlight(false, false);
-      }
-
-      fireupdateLineHighlight (prev=false, next=false) {
-        var self = this;
-        this.dispatchEvent(new CustomEvent('updateLineHighlight', {
+      /* イベント発火関数 */
+      fireCombineWithLine (prev=true, next=false, body='') {
+        if ((prev && next) || (!prev && !next)) return;
+        this.dispatchEvent(new CustomEvent('combineWithLine', {
           detail: {
-            line: self,
+            line: this,
+            body: body,
             prev: prev,
             next: next
+          },
+          bubbles: true, 
+          composed: true
+        }));
+      }
+
+      fireInsertLine (caretPos, body) {
+        this.dispatchEvent(new CustomEvent('insertLine', {
+          detail: {
+            line_after: this,
+            body: body,
+            caret_position: caretPos
+          },
+          bubbles: true, 
+          composed: true
+        }));
+      }
+
+      fireupdateLineHighlight (prev=false, next=false, caretPosition=0) {
+        this.dispatchEvent(new CustomEvent('updateLineHighlight', {
+          detail: {
+            line : this,
+            prev : prev,
+            next : next,
+            caret: caretPosition
           },
           bubbles: true, 
           composed: true

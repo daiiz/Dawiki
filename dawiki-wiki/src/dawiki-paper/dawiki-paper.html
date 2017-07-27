@@ -58,16 +58,39 @@
         this._addEventListeners();
       }
 
+      removeLine (line, autoUpdateHighlight=true) {
+        if(autoUpdateHighlight) dawiki.nextElem(line).fireupdateLineHighlight(false, false);
+        line.remove();
+      }
+
       _addEventListeners () {
         var self = this;
+
+        // 新しい行を指定位置に挿入
         dawiki.addEventListener('insertLine', e => {
           var dawikiLine = new DawikiLine();
           dawikiLine.raw = e.detail.body;
-          dawikiLine.id = dawiki.rand();
+          dawikiLine.id = dawiki.rand();  // いまは適当でいい
           dawiki.after(e.detail.line_after, dawikiLine);
           dawikiLine.fireupdateLineHighlight(false, false);
-          //console.log(e.detail, dawikiLine.raw);
         });
+
+        // 直上(または直下)の行と統合
+        dawiki.addEventListener('combineWithLine', e => {
+          var det = e.detail;
+          var line;
+          if (det.prev) {
+            line = dawiki.prevElem(det.line);
+          }else if (det.next) {
+            line = dawiki.nextElem(det.line);
+          }
+          var caretPos = line.raw.length;
+          line.raw += det.body;
+          console.info(caretPos, '!');
+          self.removeLine(det.line, false);
+          line.fireupdateLineHighlight(false, false, caretPos);
+        });
+
       }
     }
     window.customElements.define(DawikiPaper.is, DawikiPaper);
@@ -89,7 +112,7 @@
         line = dawiki.nextElem(line);
       }
       // この行にフォーカスを当てる
-      line.setEditMode();
+      line.setEditMode(e.detail.caret);
       this.editing = line;
     });
   </script>
