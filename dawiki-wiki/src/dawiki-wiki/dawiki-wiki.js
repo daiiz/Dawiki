@@ -1,7 +1,7 @@
 const $ = require('jquery');
 
 window.a = () => { console.log(888) };
-window.dawiki = {};
+window.dawiki = window.dawiki || {};
 
 window.dawiki.spans = (str) => {
   var $line = $(`<div class="text"></div>`);
@@ -21,4 +21,17 @@ window.dawiki.addClass = (elem, classNames) => {
 
 window.dawiki.css = (elem, styles) => {
   $(elem).css(styles);
+};
+
+window.dawiki.initTextarea = (elem) => {
+  $(elem).on('keydown', e => {
+    if (e.which === 13) {
+      // 改行
+      return false;
+    }
+  }).bind('blur', function () {
+    var $t = $(this);
+    var str = $t.val().replace(/\n/g, '');
+    if ($t.val() !== str) $t.val(str);
+  });
 };

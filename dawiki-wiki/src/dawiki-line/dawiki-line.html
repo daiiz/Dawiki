@@ -41,7 +41,7 @@
       }
     </style>
     <div id="line" on-click="editable"></div>
-    <textarea id="editor" type="text"></textarea>
+    <textarea id="editor" type="text" on-keyup="updateRaw"></textarea>
   </template>
 
   <script src="../../dist/bundle.js"></script>
@@ -61,7 +61,7 @@
           /* 行の背景色 */
           bgcolor   : {
             type: String, 
-            value: '#fff',  //#efefef
+            value: '#fff',
             observer: '_bgcolorChanged'
           },
         }
@@ -69,15 +69,44 @@
 
       ready () {
         super.ready();
+        this.$.editor.value = this.raw;
+        dawiki.initTextarea(this.$.editor);
         if (JSON.parse(this.istitle)) {
           this.$.line.className += ' title';
           dawiki.addClass(this.$.editor, ['title']);
         }
       }
 
-      editable () {
+      updateRaw (e) {
+        var editor = this.$.editor;
+        var keyCode = e.code;
+        var txt = editor.value;
+
+        if (keyCode === 'Enter') {
+          // 新たな行の追加要求する
+          var caretPos = editor.selectionEnd;
+          var str = txt.substring(caretPos, txt.length);
+
+          //console.log("foo!", e, editor.selectionEnd, str);
+          this.dispatchEvent(new CustomEvent('insertLine', {
+            detail: {
+              id_after: '',
+              body: str,
+              caret_position: caretPos
+            },
+            bubbles: true, 
+            composed: true
+          }));
+        }else {
+          this.raw = txt;
+        }
+      }
+
+      editable (e) {
         this.bgcolor = '#efefef';
         var editor = this.$.editor;
+        editor.selectionEnd = 3; // 3文字目の後ろにcaret
+        
         var h = this.$.line.offsetHeight;
         dawiki.css(this.$.line, {
           display: 'none'
@@ -98,9 +127,8 @@
       }
 
       _spans (str) {
-        console.warn(str);
+        this.$.line.innerHTML = '';
         this.$.line.appendChild(dawiki.spans(str.replace(/\[/g, '').replace(/\]/g, '')));
-        this.$.editor.value = str;
       }
     }
     window.customElements.define(DawikiLine.is, DawikiLine);

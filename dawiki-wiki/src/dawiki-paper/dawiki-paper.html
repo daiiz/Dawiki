@@ -49,5 +49,8 @@
       }
     }
     window.customElements.define(DawikiPaper.is, DawikiPaper);
+    dawiki.addEventListener('insertLine', e => {
+      console.log(e.detail);
+    });
   </script>
 </dom-module>
