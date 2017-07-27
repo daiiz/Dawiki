@@ -20,7 +20,7 @@
       #editor {
         font-family: 'Noto Sans Japanese', sans-serif;
         display: none;
-        color: #ccc !important;
+        color: #999 !important;
         width: 100%;
         border: 0;
         box-sizing: border-box;
@@ -37,6 +37,7 @@
 
       textarea:focus {
         outline: 0;
+        overflow: hidden;
       }
     </style>
     <div id="line" on-click="editable"></div>
@@ -76,9 +77,16 @@
 
       editable () {
         this.bgcolor = '#efefef';
-        this.$.editor.style.height = this.$.line.offsetHeight + 'px';
-        this.$.line.style.display = 'none';
-        this.$.editor.style.display = 'block';
+        var editor = this.$.editor;
+        var h = this.$.line.offsetHeight;
+        dawiki.css(this.$.line, {
+          display: 'none'
+        });
+        dawiki.css(editor, {
+          height: h + 'px',
+          display: 'block'
+        });
+        editor.focus();
       }
 
       _bgcolorChanged (newValue, oldValue) {

@@ -18,3 +18,7 @@ window.dawiki.addClass = (elem, classNames) => {
     $(elem).addClass(cn);
   });
 };
+
+window.dawiki.css = (elem, styles) => {
+  $(elem).css(styles);
+};
