@@ -7,9 +7,15 @@
       :host {
         font-family: 'Noto Sans Japanese', sans-serif;
         display: block;
+        position: relative;
+        top: 0;
+        width: 100%;
       }
 
-      #line, #editor {
+      #line, #editor, #editorShadow {
+        position: relative;
+        top: 0;
+        font-family: 'Noto Sans Japanese', sans-serif;
         color: #555;
         font-size: 15px;
         line-height: 25px;
@@ -18,10 +24,11 @@
         display: block;
       }
 
-      #editor {
+      #editor, #editorShadow {
         font-family: 'Noto Sans Japanese', sans-serif;
         display: none;
-        color: #999 !important;
+        /* #999などで着色するとデバッグしやすい */
+        color: rgba(0, 0, 0, 0) !important;
         width: 100%;
         border: 0;
         box-sizing: border-box;
@@ -29,6 +36,18 @@
         margin-left: 4px;
         resize: none;
         caret-color: #555;
+      }
+
+      #editorShadow {
+        top: 0;
+        color: red !important;
+        display: none;
+      }
+
+      #editor {
+        position: absolute !important;
+        top: 0;
+        background-color: rgba(0, 0, 0, 0) !important;
       }
 
       .title {
@@ -43,8 +62,9 @@
       }
     </style>
     <div id="line" on-click="_fireupdateLineHighlight"></div>
+    <div id="editorShadow"></div>
     <textarea id="editor" type="text" spellcheck="false" 
-      on-keydown="checkKeyDown" on-keyup="updateRaw" on-keypress="updateRawEnter"></textarea>
+      on-keydown="handleKeydown" on-keyup="updateRaw" on-keypress="updateRawEnter"></textarea>
   </template>
 
   <script src="../../dist/bundle.js"></script>
@@ -85,18 +105,29 @@
         this.$.editor.value = this.raw;
         dawiki.initTextarea(this.$.editor);
         if (JSON.parse(this.istitle)) {
-          this.$.line.className += ' title';
+          dawiki.addClass(this.$.line, ['title']);
           dawiki.addClass(this.$.editor, ['title']);
+          dawiki.addClass(this.$.editorShadow, ['title']);
         }
       }
 
-      checkKeyDown (e) {
+      handleKeydown (e) {
+        var editor = this.$.editor;
+        var txt = editor.value;
+        var diff = Math.abs(this.raw - txt);
         var keyCode = e.keyCode;
         // IMEの候補を矢印キーで操作しているときは keyCode=229
         if (keyCode === 229) {
           this.arrowLocked = true;
         }else {
           this.arrowLocked = false;
+          this.raw = txt;
+          if (keyCode === 'Backspace') {
+            // バックスペース長押し
+            if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
+              this.fireCombineWithLine(true, false, this.raw);
+            }
+          }
         }
       }
 
@@ -148,29 +179,29 @@
 
       setEditMode (caret=0) {
         var editor = this.$.editor;
+        var editorShadow = this.$.editorShadow;
         var h = this.$.line.offsetHeight;
 
-        dawiki.css(this.$.line, {
-          display: 'none'
-        });
+        dawiki.css(this.$.line, { display: 'none' });
         dawiki.css(editor, {
+          height: h + 'px',
+          display: 'block'
+        });
+        dawiki.css(editorShadow, {
           height: h + 'px',
           display: 'block'
         });
         editor.focus();
         this._setCaretPosition(caret);
-        //this._fireupdateLineHighlight();
       }
 
       setViewMode () {
         var editor = this.$.editor;
+        var editorShadow = this.$.editorShadow;
         editor.blur();
-        dawiki.css(editor, {
-          display: 'none'
-        });
-        dawiki.css(this.$.line, {
-          display: 'block'
-        });
+        dawiki.css(editor, { display: 'none' });
+        dawiki.css(editorShadow, { display: 'none' });
+        dawiki.css(this.$.line, { display: 'block' });
       }
 
       /* private methods */
@@ -206,6 +237,8 @@
       _rawChanged (newValue, oldValue) {
         var editor = this.$.editor;
         this._spans(newValue);
+        this.$.editorShadow.innerHTML = '';
+        this.$.editorShadow.appendChild(dawiki.spans(newValue));
         if (editor.value === newValue) return;
         editor.value = newValue;
       }

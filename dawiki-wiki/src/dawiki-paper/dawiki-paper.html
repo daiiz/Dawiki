@@ -86,7 +86,6 @@
           }
           var caretPos = line.raw.length;
           line.raw += det.body;
-          console.info(caretPos, '!');
           self.removeLine(det.line, false);
           line.fireupdateLineHighlight(false, false, caretPos);
         });
