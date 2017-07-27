@@ -7,3 +7,13 @@ window.dawiki.addEventListener = (eventName, func) => {
     func(e);
   });
 };
+
+window.dawiki.nextElem = elem => {
+  var $n = $(elem).next();
+  return ($n.length > 0) ? $n[0] : elem;
+};
+
+window.dawiki.prevElem = elem => {
+  var $n = $(elem).prev();
+  return ($n.length > 0) ? $n[0] : elem;
+};

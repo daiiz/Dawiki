@@ -27,6 +27,7 @@
         padding: 0;
         margin-left: 4px;
         resize: none;
+        caret-color: #555;
       }
 
       .title {
@@ -40,7 +41,7 @@
         overflow: hidden;
       }
     </style>
-    <div id="line" on-click="editable"></div>
+    <div id="line" on-click="fireupdateLineHighlight"></div>
     <textarea id="editor" type="text" on-keyup="updateRaw"></textarea>
   </template>
 
@@ -50,7 +51,7 @@
       static get is () { return 'dawiki-line' }
       static get properties () {
         return {
-          raw    : {
+          raw: {
             type: String, 
             value: '',
             observer: '_rawChanged'
@@ -87,26 +88,35 @@
           var caretPos = editor.selectionEnd;
           var str = txt.substring(caretPos, txt.length);
 
-          //console.log("foo!", e, editor.selectionEnd, str);
           this.dispatchEvent(new CustomEvent('insertLine', {
             detail: {
-              id_after: '',
+              id_after: this.id,
               body: str,
               caret_position: caretPos
             },
             bubbles: true, 
             composed: true
           }));
-        }else {
-          this.raw = txt;
+          return;
         }
+
+        if (keyCode === 'ArrowDown') {
+          this._fireupdateLineHighlight(false, true);
+          return;
+        }
+
+        if (keyCode === 'ArrowUp') {
+          this._fireupdateLineHighlight(true, false);
+          return;
+        }
+        this.raw = txt;
       }
 
-      editable (e) {
-        this.bgcolor = '#efefef';
+      setEditMode () {
         var editor = this.$.editor;
         editor.selectionEnd = 3; // 3文字目の後ろにcaret
-        
+        editor.selectionStart = 3;
+
         var h = this.$.line.offsetHeight;
         dawiki.css(this.$.line, {
           display: 'none'
@@ -116,6 +126,17 @@
           display: 'block'
         });
         editor.focus();
+        //this._fireupdateLineHighlight();
+      }
+
+      setViewMode () {
+        this.$.editor.selectionEnd = this.$.editor.value.length;
+        dawiki.css(this.$.editor, {
+          display: 'none'
+        });
+        dawiki.css(this.$.line, {
+          display: 'block'
+        });
       }
 
       _bgcolorChanged (newValue, oldValue) {
@@ -130,7 +151,25 @@
         this.$.line.innerHTML = '';
         this.$.line.appendChild(dawiki.spans(str.replace(/\[/g, '').replace(/\]/g, '')));
       }
+
+      fireupdateLineHighlight (e) {
+        this._fireupdateLineHighlight(false, false);
+      }
+
+      _fireupdateLineHighlight (prev=false, next=false) {
+        var self = this;
+        this.dispatchEvent(new CustomEvent('updateLineHighlight', {
+          detail: {
+            line: self,
+            prev: prev,
+            next: next
+          },
+          bubbles: true, 
+          composed: true
+        }));
+      };
     }
+
     window.customElements.define(DawikiLine.is, DawikiLine);
   </script>
 </dom-module>

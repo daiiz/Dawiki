@@ -31,10 +31,10 @@
     <div class="stage">
       <div id="paper" class="mdl-card mdl-shadow--2dp">
         <div class="editor">
-          <dawiki-line raw="タイトル" istitle></dawiki-line>
-          <dawiki-line raw="ここはdaiiz [apps]"></dawiki-line>
-          <dawiki-line raw="[Wiki]づくりに挑戦中"></dawiki-line>
-          <dawiki-line raw="どうしても[Scrapbox]のデザインを意識してしまう <script>alert('hello')</script>"></dawiki-line> 
+          <dawiki-line id="01" raw="タイトル" istitle></dawiki-line>
+          <dawiki-line id="10" raw="ここはdaiiz [apps]"></dawiki-line>
+          <dawiki-line id="20" raw="[Wiki]づくりに挑戦中"></dawiki-line>
+          <dawiki-line id="30" raw="どうしても[Scrapbox]のデザインを意識してしまう <script>alert('hello')</script>"></dawiki-line> 
         </div>
       </div>
     </div>
@@ -45,12 +45,38 @@
     class DawikiPaper extends Polymer.Element {
       static get is () { return 'dawiki-paper' }
       static get properties () {
-        return {}
+        return {
+          // 編集中のLine
+          editing: {
+            value: null
+          }
+        }
       }
     }
     window.customElements.define(DawikiPaper.is, DawikiPaper);
     dawiki.addEventListener('insertLine', e => {
       console.log(e.detail);
+    });
+
+    dawiki.addEventListener('updateLineHighlight', e => {
+      // 編集フォーカスを当てる要求を処理する
+      var line = e.detail.line;
+
+      if (this.editing) {
+        // 現在のフォーカスを解除
+        this.editing.setViewMode();
+      }
+
+      if (e.detail.prev) {
+        // 前の行にフォーカスを当てる
+        line = dawiki.prevElem(line);
+      }else if (e.detail.next) {
+        // 後の行にフォーカスを当てる
+        line = dawiki.nextElem(line);
+      }
+      // この行にフォーカスを当てる
+      line.setEditMode();
+      this.editing = line;
     });
   </script>
 </dom-module>
