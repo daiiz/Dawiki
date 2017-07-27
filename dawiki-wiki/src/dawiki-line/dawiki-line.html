@@ -9,11 +9,24 @@
         display: block;
       }
 
-      #line {
+      #line, #editor {
         color: #555;
         font-size: 15px;
         line-height: 25px;
         padding-left: 4px;
+        display: block;
+      }
+
+      #editor {
+        font-family: 'Noto Sans Japanese', sans-serif;
+        display: none;
+        color: #ccc !important;
+        width: 100%;
+        border: 0;
+        box-sizing: border-box;
+        padding: 0;
+        margin-left: 4px;
+        resize: none;
       }
 
       .title {
@@ -22,14 +35,12 @@
         margin-bottom: 6px;
       }
 
-      .gray {
-        background-color: #efefef;
-        border-radius: 1px;
+      textarea:focus {
+        outline: 0;
       }
     </style>
-    <div id="line">
-      [[raw]]
-    </div>
+    <div id="line" on-click="editable"></div>
+    <textarea id="editor" type="text"></textarea>
   </template>
 
   <script src="../../dist/bundle.js"></script>
@@ -38,17 +49,50 @@
       static get is () { return 'dawiki-line' }
       static get properties () {
         return {
-          raw    : {type: String, value: ''},
+          raw    : {
+            type: String, 
+            value: '',
+            observer: '_rawChanged'
+          },
+          id     : {type: String, value: ''},
+          hash   : {type: String, value: ''},
           istitle: {type: Boolean, value: false},
           /* 行の背景色 */
-          gray   : {type: Boolean, value: false},
+          bgcolor   : {
+            type: String, 
+            value: '#fff',  //#efefef
+            observer: '_bgcolorChanged'
+          },
         }
       }
 
       ready () {
         super.ready();
-        if (JSON.parse(this.istitle)) this.$.line.className += ' title';
-        if (JSON.parse(this.gray)) this.$.line.className += ' gray';
+        if (JSON.parse(this.istitle)) {
+          this.$.line.className += ' title';
+          dawiki.addClass(this.$.editor, ['title']);
+        }
+      }
+
+      editable () {
+        this.bgcolor = '#efefef';
+        this.$.editor.style.height = this.$.line.offsetHeight + 'px';
+        this.$.line.style.display = 'none';
+        this.$.editor.style.display = 'block';
+      }
+
+      _bgcolorChanged (newValue, oldValue) {
+        this.$.line.style.backgroundColor = newValue;
+      }
+
+      _rawChanged (newValue, oldValue) {
+        this._spans(newValue);
+      }
+
+      _spans (str) {
+        console.warn(str);
+        this.$.line.appendChild(dawiki.spans(str.replace(/\[/g, '').replace(/\]/g, '')));
+        this.$.editor.value = str;
       }
     }
     window.customElements.define(DawikiLine.is, DawikiLine);

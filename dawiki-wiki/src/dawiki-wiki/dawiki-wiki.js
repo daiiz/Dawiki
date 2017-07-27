@@ -1,1 +1,20 @@
+const $ = require('jquery');
 
+window.a = () => { console.log(888) };
+window.dawiki = {};
+
+window.dawiki.spans = (str) => {
+  var $line = $(`<div class="text"></div>`);
+  for (var i = 0; i < str.length; i++) {
+    var c = str.charAt(i);
+    var $span = $(`<span class="c c-${i}">${c}</span>`);
+    $line.append($span);
+  }
+  return $line[0];
+};
+
+window.dawiki.addClass = (elem, classNames) => {
+  classNames.forEach(cn => {
+    $(elem).addClass(cn);
+  });
+};
