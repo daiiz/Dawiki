@@ -15,7 +15,7 @@
         width: 100%;
       }
 
-      #paper {
+      #page {
         width: 95%;
         max-width: 945px;
         background-color: #fff;
@@ -23,14 +23,14 @@
         box-sizing: border-box;
       }
 
-      .editor {
+      #paper {
         margin: 32px;
         cursor: text;
       }
     </style>
     <div class="stage">
-      <div id="paper" class="mdl-card mdl-shadow--2dp">
-        <div class="editor">
+      <div id="page" class="mdl-card mdl-shadow--2dp">
+        <div id="paper">
           <dawiki-line id="01" raw="タイトル" istitle></dawiki-line>
           <dawiki-line id="10" raw="ここはdaiiz [apps]"></dawiki-line>
           <dawiki-line id="20" raw="[Wiki]づくりに挑戦中"></dawiki-line>
@@ -52,11 +52,25 @@
           }
         }
       }
+
+      ready () {
+        super.ready();
+        this._addEventListeners();
+      }
+
+      _addEventListeners () {
+        var self = this;
+        dawiki.addEventListener('insertLine', e => {
+          var dawikiLine = new DawikiLine();
+          dawikiLine.raw = e.detail.body;
+          dawikiLine.id = dawiki.rand();
+          dawiki.after(e.detail.line_after, dawikiLine);
+          dawikiLine.fireupdateLineHighlight(false, false);
+          //console.log(e.detail, dawikiLine.raw);
+        });
+      }
     }
     window.customElements.define(DawikiPaper.is, DawikiPaper);
-    dawiki.addEventListener('insertLine', e => {
-      console.log(e.detail);
-    });
 
     dawiki.addEventListener('updateLineHighlight', e => {
       // 編集フォーカスを当てる要求を処理する

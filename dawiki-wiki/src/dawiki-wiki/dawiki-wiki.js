@@ -24,7 +24,7 @@ window.dawiki.css = (elem, styles) => {
 }
 
 window.dawiki.initTextarea = (elem) => {
-  $(elem).on('keydown', e => {
+  $(elem).on('keypress', e => {
     if (e.which === 13) {
       // 改行
       return false
