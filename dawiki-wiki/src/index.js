@@ -18,6 +18,18 @@ window.dawiki.prevElem = elem => {
   return ($n.length > 0) ? $n[0] : elem
 }
 
+window.dawiki.append = (a, b) => {
+  $(a).append($(b));
+}
+
+window.dawiki.remove = (elem, selector) => {
+  $(elem).find(selector).remove();
+}
+
+window.dawiki.find = (elem, selector) => {
+  return $(elem).find(selector);
+}
+
 window.dawiki.before = (a, b) => {
   $(a).before(b)
 }
@@ -33,4 +45,14 @@ window.dawiki.closest = (elem, selector) => {
 
 window.dawiki.rand = () => {
   return Math.floor(Math.random() * 1000000) + 1
+}
+
+window.dawiki.addClass = (elem, classNames) => {
+  classNames.forEach(cn => {
+    $(elem).addClass(cn)
+  })
+}
+
+window.dawiki.css = (elem, styles) => {
+  $(elem).css(styles)
 }

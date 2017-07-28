@@ -1,4 +1,5 @@
 const $ = require('jquery')
+const diff = require('diff')
 const ENTER = 13
 const TAB = 9
 
@@ -9,20 +10,10 @@ window.dawiki.spans = (str) => {
   var $line = $(`<div class="text"></div>`)
   for (var i = 0; i < str.length; i++) {
     var c = str.charAt(i)
-    var $span = $(`<span class="c c-${i}">${c}</span>`)
+    var $span = $(`<span class="c">${c}</span>`)
     $line.append($span)
   }
   return $line[0]
-}
-
-window.dawiki.addClass = (elem, classNames) => {
-  classNames.forEach(cn => {
-    $(elem).addClass(cn)
-  })
-}
-
-window.dawiki.css = (elem, styles) => {
-  $(elem).css(styles)
 }
 
 window.dawiki.initTextarea = (elem) => {
@@ -41,3 +32,7 @@ window.dawiki.initTextarea = (elem) => {
     if ($t.val() !== str) $t.val(str)
   })
 }
+
+window.dawiki.diff = (oldStr, newStr) => {
+  return diff.diffChars(oldStr, newStr);
+};

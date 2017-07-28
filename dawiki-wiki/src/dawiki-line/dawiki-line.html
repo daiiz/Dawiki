@@ -28,6 +28,7 @@
         font-family: 'Noto Sans Japanese', sans-serif;
         display: none;
         /* #999などで着色するとデバッグしやすい */
+        color: #999;
         color: rgba(0, 0, 0, 0) !important;
         width: 100%;
         border: 0;
@@ -41,6 +42,7 @@
       #editorShadow {
         top: 0;
         color: red !important;
+        color: #555 !important;
         display: none;
       }
 
@@ -117,6 +119,7 @@
         var diff = Math.abs(this.raw - txt);
         var keyCode = e.keyCode;
         // IMEの候補を矢印キーで操作しているときは keyCode=229
+        console.info('>>>', keyCode)
         if (keyCode === 229) {
           this.arrowLocked = true;
         }else {
@@ -235,8 +238,33 @@
       }
 
       _rawChanged (newValue, oldValue) {
+        oldValue = oldValue || '';
         var editor = this.$.editor;
         this._spans(newValue);
+
+        // editorShadowに編集中の内容を伝える
+        var diffChars = dawiki.diff(oldValue, newValue);
+        var ptr = 0;
+        //console.info(diffChars);
+        // diffChars.forEach(diff => {
+        //   if (diff.added) {
+        //     var val = diff.value.split('');
+        //     val.forEach(c => {
+        //       dawiki.append(this.$.editorShadow, `<span class="c">${c}</span>`);
+        //     });
+        //     ptr += diff.count;
+        //   }else if (diff.removed) {
+        //     var chars = dawiki.find(this.$.editorShadow, '.c');
+        //     for (var i = 0; i < diff.count; i++) {
+        //       dawiki.addClass(chars[ptr + i], ['c-rm']);
+        //     }
+        //     //console.log(chars)
+        //     dawiki.remove(this.$.editorShadow, '.c-rm');
+        //   }else {
+        //     ptr += diff.count;
+        //   }
+        // });
+
         this.$.editorShadow.innerHTML = '';
         this.$.editorShadow.appendChild(dawiki.spans(newValue));
         if (editor.value === newValue) return;
