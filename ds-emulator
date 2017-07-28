@@ -1,0 +1,8 @@
+# DataStore Emulator
+# See: https://cloud.google.com/datastore/docs/tools/datastore-emulator?hl=ja
+
+# Run once:
+# gcloud components install beta
+
+$(gcloud beta emulators datastore env-init)
+gcloud beta emulators datastore start --project=daiiz-apps
