@@ -4,5 +4,4 @@
 # Run once:
 # gcloud components install beta
 
-$(gcloud beta emulators datastore env-init)
 gcloud beta emulators datastore start --project=daiiz-apps

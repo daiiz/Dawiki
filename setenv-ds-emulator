@@ -1,0 +1,11 @@
+# Run after ./ds-emulator
+
+$(gcloud beta emulators datastore env-init)
+
+# Then check these:
+#   echo $DATASTORE_PROJECT_ID
+#   echo $DATASTORE_EMULATOR_HOST
+#   echo $DATASTORE_EMULATOR_HOST_PATH 
+
+# Run inorder to reset these values:
+#   ./clearenv-ds-emulator
