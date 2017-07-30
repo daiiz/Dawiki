@@ -12,7 +12,7 @@
         width: 100%;
       }
 
-      #line, #editor, #editorShadow {
+      #line, #editor, #coloredEditor {
         position: relative;
         top: 0;
         font-family: 'Noto Sans Japanese', sans-serif;
@@ -24,7 +24,7 @@
         display: block;
       }
 
-      #editor, #editorShadow {
+      #editor, #coloredEditor {
         font-family: 'Noto Sans Japanese', sans-serif;
         display: none;
         /* #999などで着色するとデバッグしやすい */
@@ -39,7 +39,7 @@
         caret-color: #555;
       }
 
-      #editorShadow {
+      #coloredEditor {
         top: 0;
         color: red !important;
         color: #555 !important;
@@ -64,7 +64,7 @@
       }
     </style>
     <div id="line" on-click="_fireupdateLineHighlight"></div>
-    <div id="editorShadow"></div>
+    <div id="coloredEditor"></div>
     <textarea id="editor" type="text" spellcheck="false" 
       on-keydown="handleKeydown" on-keyup="updateRaw" on-keypress="updateRawEnter"></textarea>
   </template>
@@ -109,7 +109,7 @@
         if (JSON.parse(this.istitle)) {
           dawiki.addClass(this.$.line, ['title']);
           dawiki.addClass(this.$.editor, ['title']);
-          dawiki.addClass(this.$.editorShadow, ['title']);
+          dawiki.addClass(this.$.coloredEditor, ['title']);
         }
       }
 
@@ -182,7 +182,7 @@
 
       setEditMode (caret=0) {
         var editor = this.$.editor;
-        var editorShadow = this.$.editorShadow;
+        var coloredEditor = this.$.coloredEditor;
         var h = this.$.line.offsetHeight;
 
         dawiki.css(this.$.line, { display: 'none' });
@@ -190,7 +190,7 @@
           height: h + 'px',
           display: 'block'
         });
-        dawiki.css(editorShadow, {
+        dawiki.css(coloredEditor, {
           height: h + 'px',
           display: 'block'
         });
@@ -200,10 +200,10 @@
 
       setViewMode () {
         var editor = this.$.editor;
-        var editorShadow = this.$.editorShadow;
+        var coloredEditor = this.$.coloredEditor;
         editor.blur();
         dawiki.css(editor, { display: 'none' });
-        dawiki.css(editorShadow, { display: 'none' });
+        dawiki.css(coloredEditor, { display: 'none' });
         dawiki.css(this.$.line, { display: 'block' });
       }
 
@@ -242,7 +242,7 @@
         var editor = this.$.editor;
         this._spans(newValue);
 
-        // editorShadowに編集中の内容を伝える
+        // coloredEditorに編集中の内容を伝える
         var diffChars = dawiki.diff(oldValue, newValue);
         var ptr = 0;
         //console.info(diffChars);
@@ -250,23 +250,23 @@
         //   if (diff.added) {
         //     var val = diff.value.split('');
         //     val.forEach(c => {
-        //       dawiki.append(this.$.editorShadow, `<span class="c">${c}</span>`);
+        //       dawiki.append(this.$.coloredEditor, `<span class="c">${c}</span>`);
         //     });
         //     ptr += diff.count;
         //   }else if (diff.removed) {
-        //     var chars = dawiki.find(this.$.editorShadow, '.c');
+        //     var chars = dawiki.find(this.$.coloredEditor, '.c');
         //     for (var i = 0; i < diff.count; i++) {
         //       dawiki.addClass(chars[ptr + i], ['c-rm']);
         //     }
         //     //console.log(chars)
-        //     dawiki.remove(this.$.editorShadow, '.c-rm');
+        //     dawiki.remove(this.$.coloredEditor, '.c-rm');
         //   }else {
         //     ptr += diff.count;
         //   }
         // });
 
-        this.$.editorShadow.innerHTML = '';
-        this.$.editorShadow.appendChild(dawiki.spans(newValue));
+        this.$.coloredEditor.innerHTML = '';
+        this.$.coloredEditor.appendChild(dawiki.spans(newValue));
         if (editor.value === newValue) return;
         editor.value = newValue;
       }
