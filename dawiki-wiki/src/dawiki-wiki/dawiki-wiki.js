@@ -6,11 +6,15 @@ const TAB = 9
 window.a = () => { console.log(888) }
 window.dawiki = window.dawiki || {}
 
-window.dawiki.spans = (str) => {
+window.dawiki.spans = (str, caret=null) => {
   var $line = $(`<div class="text"></div>`)
   for (var i = 0; i < str.length; i++) {
+    var n = '';
     var c = str.charAt(i)
-    var $span = $(`<span class="c">${c}</span>`)
+    if (caret !== null) {
+      if (i >= caret - 1) n = 'n';
+    }
+    var $span = $(`<span class="c ${n}">${c}</span>`)
     $line.append($span)
   }
   return $line[0]

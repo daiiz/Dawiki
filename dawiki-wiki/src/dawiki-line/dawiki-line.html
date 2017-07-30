@@ -27,9 +27,7 @@
       #editor, #coloredEditor {
         font-family: 'Noto Sans Japanese', sans-serif;
         display: none;
-        /* #999などで着色するとデバッグしやすい */
-        color: #999;
-        color: rgba(0, 0, 0, 0) !important;
+        color: rgba(0, 0, 0, 0);
         width: 100%;
         border: 0;
         box-sizing: border-box;
@@ -40,15 +38,29 @@
       }
 
       #coloredEditor {
+        /* z-index: 90; */
         top: 0;
+        color: yellow !important;
+        display: none;
+      }
+
+      #coloredEditor .c {
+        /* colorをredなどにするとdebugしやすい */
         color: red !important;
-        color: #555 !important;
+        z-index: 110;
+        position: sticky;
+        background-color: #fff;
+      }
+
+      #coloredEditor .n {
         display: none;
       }
 
       #editor {
+        z-index: 100;
         position: absolute !important;
         top: 0;
+        color: #555 !important;
         background-color: rgba(0, 0, 0, 0) !important;
       }
 
@@ -117,23 +129,24 @@
         var editor = this.$.editor;
         var txt = editor.value;
         var diff = Math.abs(this.raw - txt);
-        var keyCode = e.keyCode;
         // IMEの候補を矢印キーで操作しているときは keyCode=229
-        console.info('>>>', keyCode)
-        if (keyCode === 229) {
+        if (e.code !== 'Enter' && e.keyCode === 229) {
           this.arrowLocked = true;
         }else {
           this.arrowLocked = false;
           this.raw = txt;
-          if (keyCode === 'Backspace') {
+          if (e.keyCode === 'Backspace') {
             // バックスペース長押し
             if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
               this.fireCombineWithLine(true, false, this.raw);
             }
+          }else if (e.code === 'ArrowLeft') {
+            this._updateColoredEditorContents();
           }
         }
       }
 
+      // keyup
       updateRaw (e) {
         var editor = this.$.editor;
         var keyCode = e.code;
@@ -160,6 +173,7 @@
             this.fireCombineWithLine(true, false, this.raw);
           }
         }
+        this._updateColoredEditorContents();
       }
 
       updateRawEnter (e) {
@@ -243,32 +257,20 @@
         this._spans(newValue);
 
         // coloredEditorに編集中の内容を伝える
-        var diffChars = dawiki.diff(oldValue, newValue);
-        var ptr = 0;
-        //console.info(diffChars);
-        // diffChars.forEach(diff => {
-        //   if (diff.added) {
-        //     var val = diff.value.split('');
-        //     val.forEach(c => {
-        //       dawiki.append(this.$.coloredEditor, `<span class="c">${c}</span>`);
-        //     });
-        //     ptr += diff.count;
-        //   }else if (diff.removed) {
-        //     var chars = dawiki.find(this.$.coloredEditor, '.c');
-        //     for (var i = 0; i < diff.count; i++) {
-        //       dawiki.addClass(chars[ptr + i], ['c-rm']);
-        //     }
-        //     //console.log(chars)
-        //     dawiki.remove(this.$.coloredEditor, '.c-rm');
-        //   }else {
-        //     ptr += diff.count;
-        //   }
-        // });
-
-        this.$.coloredEditor.innerHTML = '';
-        this.$.coloredEditor.appendChild(dawiki.spans(newValue));
+        this._updateColoredEditorContents(newValue, oldValue);
+        
         if (editor.value === newValue) return;
         editor.value = newValue;
+      }
+
+      _updateColoredEditorContents (newValue=null, oldValue=null) {
+        if (newValue === null) newValue = this.raw;
+        var caret = this._getCaretPosition();
+        if (oldValue !== null && oldValue.length === 0) caret = newValue.length;
+        if (!this.arrowLocked) {
+          this.$.coloredEditor.innerHTML = '';
+          this.$.coloredEditor.appendChild(dawiki.spans(newValue, caret));
+        }
       }
 
       /* イベント発火関数 */
