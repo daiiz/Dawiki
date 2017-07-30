@@ -43,6 +43,11 @@ window.dawiki.closest = (elem, selector) => {
   return ($t.length > 0) ? $t[0] : null
 }
 
+window.dawiki.index = (elem, parent) => {
+  var idx = $(parent).index(elem) || -1;
+  return idx;
+}
+
 window.dawiki.rand = () => {
   return Math.floor(Math.random() * 1000000) + 1
 }

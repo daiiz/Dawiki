@@ -46,7 +46,7 @@
 
       #coloredEditor .c {
         /* colorをredなどにするとdebugしやすい */
-        color: red !important;
+        color: goldenrod !important;
         z-index: 110;
         position: sticky;
         background-color: #fff;
@@ -75,8 +75,8 @@
         overflow: hidden;
       }
     </style>
-    <div id="line" on-click="_fireupdateLineHighlight"></div>
-    <div id="coloredEditor"></div>
+    <div id="line" on-click="_fireupdateLineHighlight" class="base"></div>
+    <div id="coloredEditor" on-click="_fireupdateLineHighlight" class="base"></div>
     <textarea id="editor" type="text" spellcheck="false" 
       on-keydown="handleKeydown" on-keyup="updateRaw" on-keypress="updateRawEnter"></textarea>
   </template>
@@ -128,16 +128,17 @@
       handleKeydown (e) {
         var editor = this.$.editor;
         var txt = editor.value;
-        var diff = Math.abs(this.raw - txt);
+        var diff = Math.abs(this.raw.length - txt.length);
         // IMEの候補を矢印キーで操作しているときは keyCode=229
         if (e.code !== 'Enter' && e.keyCode === 229) {
           this.arrowLocked = true;
         }else {
           this.arrowLocked = false;
           this.raw = txt;
-          if (e.keyCode === 'Backspace') {
+          if (e.code === 'Backspace') {
             // バックスペース長押し
-            if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
+            if (this._getCaretPosition() === 0 && (txt.length === 0 || diff === 0)) {
+              e.preventDefault();
               this.fireCombineWithLine(true, false, this.raw);
             }
           }else if (e.code === 'ArrowLeft') {
@@ -168,11 +169,15 @@
         }
         
         this.raw = txt;
-        if (keyCode === 'Backspace') {
-          if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
-            this.fireCombineWithLine(true, false, this.raw);
-          }
-        }
+        // if (keyCode === 'Backspace') {
+        //   // if (this.backspaceLocked) {
+        //   //   this.backspaceLocked = false;
+        //   //   return;
+        //   // }
+        //   // if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
+        //   //   this.fireCombineWithLine(true, false, this.raw);
+        //   // }
+        // }
         this._updateColoredEditorContents();
       }
 
@@ -210,6 +215,7 @@
         });
         editor.focus();
         this._setCaretPosition(caret);
+        this._updateColoredEditorContents();
       }
 
       setViewMode () {
@@ -239,7 +245,13 @@
       }
 
       _fireupdateLineHighlight (e) {
-        this.fireupdateLineHighlight(false, false, this.raw.length);
+        var closestChar = dawiki.closest(e.target, '.c');
+        var base = dawiki.closest(closestChar, '.base');
+        var pos = this.raw.length;
+        if (closestChar) {
+          pos = Math.max(0, dawiki.index(closestChar, base.querySelectorAll('.c')));
+        }
+        this.fireupdateLineHighlight(false, false, pos);
       }
 
       /* prop observers */

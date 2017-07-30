@@ -86,6 +86,7 @@
           }
           var caretPos = line.raw.length;
           line.raw += det.body;
+          console.log('%%', line.raw)
           self.removeLine(det.line, false);
           line.fireupdateLineHighlight(false, false, caretPos);
         });
@@ -112,6 +113,7 @@
       }
       // この行にフォーカスを当てる
       line.setEditMode(e.detail.caret);
+      console.log('>>>>',line.raw)
       this.editing = line;
     });
   </script>
