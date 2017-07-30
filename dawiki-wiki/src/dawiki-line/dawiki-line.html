@@ -77,8 +77,8 @@
     </style>
     <div id="line" on-click="_fireupdateLineHighlight" class="base"></div>
     <div id="coloredEditor" on-click="_fireupdateLineHighlight" class="base"></div>
-    <textarea id="editor" type="text" spellcheck="false" 
-      on-keydown="handleKeydown" on-keyup="updateRaw" on-keypress="updateRawEnter"></textarea>
+    <textarea id="editor" type="text" spellcheck="false" on-click="_editorClicked"
+      on-keydown="handleKeydown" on-keyup="updateRaw"></textarea>
   </template>
 
   <script src="../../dist/bundle.js"></script>
@@ -129,20 +129,41 @@
         var editor = this.$.editor;
         var txt = editor.value;
         var diff = Math.abs(this.raw.length - txt.length);
-        // IMEの候補を矢印キーで操作しているときは keyCode=229
-        if (e.code !== 'Enter' && e.keyCode === 229) {
+        var f = (txt.length === 0 || diff === 0);
+        // 新たな行の追加要求する
+        if (dawiki.isEnter(e) && e.keyCode !== 229) {
+          this.insertNewLine();
+          return;
+        }
+
+        // IMEの候補を操作しているときはkeyCode=229
+        if (!dawiki.isEnter(e) && e.keyCode === 229) {
           this.arrowLocked = true;
-        }else {
-          this.arrowLocked = false;
-          this.raw = txt;
-          if (e.code === 'Backspace') {
-            // バックスペース長押し
-            if (this._getCaretPosition() === 0 && (txt.length === 0 || diff === 0)) {
-              e.preventDefault();
-              this.fireCombineWithLine(true, false, this.raw);
-            }
-          }else if (e.code === 'ArrowLeft') {
-            this._updateColoredEditorContents();
+          return;
+        }
+
+        this.arrowLocked = false;
+        this.raw = txt;
+        if (dawiki.isBackspace(e)) {
+          if (this._getCaretPosition() === 0 && f) {
+            e.preventDefault();
+            // 直上の行と統合してカーソルを移動
+            this.fireCombineWithLine(true, false, this.raw);
+          }
+        }else if (dawiki.isArrowLeft(e)) {
+          this._updateColoredEditorContents();
+          if (this._getCaretPosition() === 0 && f) {
+            e.preventDefault();
+            // 前の行の末尾にカーソルを移動
+            this.fireupdateLineHighlight(true, false, -1);
+          }
+        }else if (dawiki.isArrowRight(e)) {
+          this._updateColoredEditorContents();
+          if (this._getCaretPosition() === this.$.editor.value.length && f) {
+            console.log(33333)
+            e.preventDefault();
+            // 次の行の先頭にカーソルを移動
+            this.fireupdateLineHighlight(false, true, 0);
           }
         }
       }
@@ -150,18 +171,15 @@
       // keyup
       updateRaw (e) {
         var editor = this.$.editor;
-        var keyCode = e.code;
         var txt = editor.value;
         var diff = Math.abs(this.raw - txt);
 
         if (!this.arrowLocked) {
-          if (keyCode === 'ArrowDown') {
+          if (dawiki.isArrowDown(e)) {
             this._setCaretPosition(this.raw.length);  //
             this.fireupdateLineHighlight(false, true, this._getCaretPosition());
             return;
-          }
-
-          if (keyCode === 'ArrowUp') {
+          }else if (dawiki.isArrowUp(e)) {
             this._setCaretPosition(this.raw.length);  //
             this.fireupdateLineHighlight(true, false, this._getCaretPosition());
             return;
@@ -169,34 +187,18 @@
         }
         
         this.raw = txt;
-        // if (keyCode === 'Backspace') {
-        //   // if (this.backspaceLocked) {
-        //   //   this.backspaceLocked = false;
-        //   //   return;
-        //   // }
-        //   // if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
-        //   //   this.fireCombineWithLine(true, false, this.raw);
-        //   // }
-        // }
         this._updateColoredEditorContents();
       }
 
-      updateRawEnter (e) {
+      insertNewLine () {
         var editor = this.$.editor;
-        var keyCode = e.code;
         var txt = editor.value;
-
-        if (keyCode === 'Enter') {
-          // 新たな行の追加要求する
-          var caretPos = this._getCaretPosition();
-          var tailTxt = txt.substring(caretPos, txt.length);
-          var headTxt = txt.substring(0, caretPos);
-          this.raw = headTxt;
-          this.fireInsertLine(caretPos, tailTxt);
-          return;
-        }
-
-        this.raw = txt;
+        // 新たな行の追加要求する
+        var caretPos = this._getCaretPosition();
+        var tailTxt = txt.substring(caretPos, txt.length);
+        var headTxt = txt.substring(0, caretPos);
+        this.raw = headTxt;
+        this.fireInsertLine(caretPos, tailTxt);
       }
 
       setEditMode (caret=0) {
@@ -234,6 +236,10 @@
 
       _setCaretPosition (pos=0) {
         var editor = this.$.editor;
+        if (pos === -1) {
+          // 末尾を指す
+          pos = editor.value.length;
+        }
         pos = Math.max(pos, 0);
         editor.selectionStart = pos;
         editor.selectionEnd = pos;
@@ -273,6 +279,10 @@
         
         if (editor.value === newValue) return;
         editor.value = newValue;
+      }
+
+      _editorClicked (e) {
+        this._updateColoredEditorContents();
       }
 
       _updateColoredEditorContents (newValue=null, oldValue=null) {

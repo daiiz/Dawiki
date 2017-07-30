@@ -19,15 +19,15 @@ window.dawiki.prevElem = elem => {
 }
 
 window.dawiki.append = (a, b) => {
-  $(a).append($(b));
+  $(a).append($(b))
 }
 
 window.dawiki.remove = (elem, selector) => {
-  $(elem).find(selector).remove();
+  $(elem).find(selector).remove()
 }
 
 window.dawiki.find = (elem, selector) => {
-  return $(elem).find(selector);
+  return $(elem).find(selector)
 }
 
 window.dawiki.before = (a, b) => {
@@ -44,8 +44,8 @@ window.dawiki.closest = (elem, selector) => {
 }
 
 window.dawiki.index = (elem, parent) => {
-  var idx = $(parent).index(elem) || -1;
-  return idx;
+  var idx = $(parent).index(elem) || -1
+  return idx
 }
 
 window.dawiki.rand = () => {
