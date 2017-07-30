@@ -11,8 +11,11 @@ window.dawiki.spans = (str, caret = null) => {
   for (var i = 0; i < str.length; i++) {
     var c = str.charAt(i)
     var $span = $(`<span class="c">${c}</span>`)
-    if (caret !== null && i >= caret - 1) {
+    if (caret !== null && i >= caret - 2) {
       $span.addClass('n')
+    }
+    if (c === '[' || c === ']') {
+      $span.addClass('b');
     }
     $line.append($span)
   }
@@ -25,8 +28,7 @@ window.dawiki.initTextarea = (elem) => {
   })
 
   $(elem).on('keypress', e => {
-    if (e.which === ENTER) { // || e.which === ARROW_UP || e.which === ARROW_DOWN) {
-      // 改行またはタブ文字
+    if (e.which === ENTER) {
       return false
     }
   }).bind('blur', function () {

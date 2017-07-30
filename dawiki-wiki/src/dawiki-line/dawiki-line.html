@@ -19,20 +19,19 @@
         color: #555;
         font-size: 15px;
         line-height: 25px;
-        padding-left: 4px;
+        margin-left: 4px;
         min-height: 25px;
         display: block;
+        width: 100%;
       }
 
       #editor, #coloredEditor {
         font-family: 'Noto Sans Japanese', sans-serif;
         display: none;
         color: rgba(0, 0, 0, 0);
-        width: 100%;
         border: 0;
         box-sizing: border-box;
         padding: 0;
-        margin-left: 4px;
         resize: none;
         caret-color: #555;
       }
@@ -40,13 +39,14 @@
       #coloredEditor {
         /* z-index: 90; */
         top: 0;
-        color: yellow !important;
         display: none;
+        background-color: rgba(0, 0, 0, 0) !important;
       }
 
       #coloredEditor .c {
         /* colorをredなどにするとdebugしやすい */
-        color: goldenrod !important;
+        /* color: goldenrod !important;*/
+        color: #555;
         z-index: 110;
         position: sticky;
         background-color: #fff;
@@ -56,12 +56,17 @@
         display: none;
       }
 
+      #coloredEditor .b {
+        color: #ed8362;
+      }
+
       #editor {
         z-index: 100;
         position: absolute !important;
         top: 0;
         color: #555 !important;
         background-color: rgba(0, 0, 0, 0) !important;
+        overflow: hidden;
       }
 
       .title {
@@ -76,9 +81,12 @@
       }
     </style>
     <div id="line" on-click="_fireupdateLineHighlight" class="base"></div>
-    <div id="coloredEditor" on-click="_fireupdateLineHighlight" class="base"></div>
-    <textarea id="editor" type="text" spellcheck="false" on-click="_editorClicked"
-      on-keydown="handleKeydown" on-keyup="updateRaw"></textarea>
+    <div>
+      <div id="coloredEditor" on-click="_fireupdateLineHighlight" class="base">
+      </div>
+      <textarea id="editor" type="text" spellcheck="false" on-click="_editorClicked"
+        on-keydown="handleKeydown" on-keyup="updateRaw"></textarea>
+    </div>
   </template>
 
   <script src="../../dist/bundle.js"></script>
@@ -101,7 +109,7 @@
           hash   : {type: String, value: ''},
           istitle: {type: Boolean, value: false},
           /* IMEに矢印キーを乗っ取られているときは矢印機能をロックする */
-          arrowLocked: {
+          workingIME: {
             type: Boolean,
             value: false
           },
@@ -138,11 +146,11 @@
 
         // IMEの候補を操作しているときはkeyCode=229
         if (!dawiki.isEnter(e) && e.keyCode === 229) {
-          this.arrowLocked = true;
+          this.workingIME = true;
           return;
         }
 
-        this.arrowLocked = false;
+        this.workingIME = false;
         this.raw = txt;
         if (dawiki.isBackspace(e)) {
           if (this._getCaretPosition() === 0 && f) {
@@ -160,7 +168,6 @@
         }else if (dawiki.isArrowRight(e)) {
           this._updateColoredEditorContents();
           if (this._getCaretPosition() === this.$.editor.value.length && f) {
-            console.log(33333)
             e.preventDefault();
             // 次の行の先頭にカーソルを移動
             this.fireupdateLineHighlight(false, true, 0);
@@ -174,7 +181,7 @@
         var txt = editor.value;
         var diff = Math.abs(this.raw - txt);
 
-        if (!this.arrowLocked) {
+        if (!this.workingIME) {
           if (dawiki.isArrowDown(e)) {
             this._setCaretPosition(this.raw.length);  //
             this.fireupdateLineHighlight(false, true, this._getCaretPosition());
@@ -272,10 +279,22 @@
       _rawChanged (newValue, oldValue) {
         oldValue = oldValue || '';
         var editor = this.$.editor;
+        // lineに編集中の内容を伝える
         this._spans(newValue);
 
         // coloredEditorに編集中の内容を伝える
         this._updateColoredEditorContents(newValue, oldValue);
+        
+        var text = this.$.coloredEditor.querySelector('.text');
+        if (text) {
+          var h = this.$.coloredEditor.querySelector('.text').offsetHeight;
+          dawiki.css(this.$.editor, {
+            height: `${h}px`
+          });
+          dawiki.css(this.$.coloredEditor, {
+            height: `${h}px`
+          });
+        }
         
         if (editor.value === newValue) return;
         editor.value = newValue;
@@ -289,7 +308,7 @@
         if (newValue === null) newValue = this.raw;
         var caret = this._getCaretPosition();
         if (oldValue !== null && oldValue.length === 0) caret = newValue.length;
-        if (!this.arrowLocked) {
+        if (!this.workingIME) {
           this.$.coloredEditor.innerHTML = '';
           this.$.coloredEditor.appendChild(dawiki.spans(newValue, caret));
         }
