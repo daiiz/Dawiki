@@ -60,7 +60,10 @@
 
       removeLine (line, autoUpdateHighlight=true) {
         if(autoUpdateHighlight) dawiki.nextElem(line).fireupdateLineHighlight(false, false);
-        line.remove();
+        // タイトル行でないことを確認してから消す
+        if (!line.istitle) {
+          line.remove();
+        }
       }
 
       _addEventListeners () {

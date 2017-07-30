@@ -75,6 +75,10 @@
         margin-bottom: 12px;
       }
 
+      .text {
+        height: 100%;
+      }
+
       textarea:focus {
         outline: 0;
         overflow: hidden;
@@ -126,10 +130,8 @@
         super.ready();
         this.$.editor.value = this.raw;
         dawiki.initTextarea(this.$.editor);
-        if (JSON.parse(this.istitle)) {
-          dawiki.addClass(this.$.line, ['title']);
-          dawiki.addClass(this.$.editor, ['title']);
-          dawiki.addClass(this.$.coloredEditor, ['title']);
+        if (this.istitle) {
+          this._initTitle();
         }
       }
 
@@ -287,6 +289,7 @@
         
         var text = this.$.coloredEditor.querySelector('.text');
         if (text) {
+          console.log(text.offsetHeight, text.innerText)
           var h = this.$.coloredEditor.querySelector('.text').offsetHeight;
           dawiki.css(this.$.editor, {
             height: `${h}px`
@@ -295,7 +298,7 @@
             height: `${h}px`
           });
         }
-        
+
         if (editor.value === newValue) return;
         editor.value = newValue;
       }
@@ -312,6 +315,13 @@
           this.$.coloredEditor.innerHTML = '';
           this.$.coloredEditor.appendChild(dawiki.spans(newValue, caret));
         }
+      }
+
+      _initTitle () {
+        dawiki.addClass(this.$.line, ['title']);
+        dawiki.addClass(this.$.editor, ['title']);
+        dawiki.addClass(this.$.coloredEditor, ['title']);
+        this.$.editor.placeholder = 'Untitled'
       }
 
       /* イベント発火関数 */

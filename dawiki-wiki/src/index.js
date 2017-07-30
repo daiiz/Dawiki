@@ -58,6 +58,10 @@ window.dawiki.addClass = (elem, classNames) => {
   })
 }
 
+window.dawiki.hasClass = (elem, className) => {
+  return $(elem).hasClass(className)
+}
+
 window.dawiki.css = (elem, styles) => {
   $(elem).css(styles)
 }
