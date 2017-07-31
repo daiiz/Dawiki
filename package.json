@@ -6,6 +6,9 @@
   "author": "daiiz <da.iz.mg@gmail.com>",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": "7.0.0"
+  },
   "scripts": {
     "start": "node app.js",
     "start:dev": "node-dev app.js",
