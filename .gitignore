@@ -1,3 +1,5 @@
+keys/*
+!keys/.keep
 **/bower_components/*
 **/bundle.js
 
