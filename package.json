@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node app.js",
     "start:dev": "node-dev app.js",
-    "bower": "cd ./dawiki-wiki && ./node_modules/bower/bin/bower install",
+    "bower": "cd ./dawiki-wiki && ../node_modules/bower/bin/bower install",
     "test": "standard ./dawiki-wiki/src/**/**.js ./dawiki-wiki/src/*.js ./src/*.js --fix",
     "watch": "watchify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js -v"
   },
