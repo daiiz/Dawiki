@@ -6,18 +6,29 @@
   "author": "daiiz <da.iz.mg@gmail.com>",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": "7.0.0"
+  },
   "scripts": {
-    "start": "node-dev app.js",
+    "postinstall": "yarn run build",
+    "start": "node app.js",
+    "start:dev": "node-dev app.js",
+    "build": "./node_modules/.bin/run-s build:**",
+    "build:browserify": "browserify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js",
+    "build:bower": "cd ./dawiki-wiki && ../node_modules/bower/bin/bower install",
     "test": "standard ./dawiki-wiki/src/**/**.js ./dawiki-wiki/src/*.js ./src/*.js --fix",
     "watch": "watchify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js -v"
   },
   "dependencies": {
     "argv": "^0.0.2",
     "body-parser": "^1.17.2",
+    "bower": "^1.8.0",
+    "browserify": "^14.4.0",
     "diff": "^3.3.0",
     "ejs": "^2.5.7",
     "express": "^4.15.3",
     "jquery": "^3.2.1",
+    "npm-run-all": "^4.0.2",
     "socket.io": "^2.0.3",
     "socket.io-client": "^2.0.3",
     "socket.io-request": "^0.3.1",
