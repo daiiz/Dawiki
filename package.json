@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": true,
   "engines": {
-    "node": "7.0.0"
+    "node": "7.6.0"
   },
   "scripts": {
     "postinstall": "yarn run build",
@@ -16,10 +16,13 @@
     "build": "./node_modules/.bin/run-s build:**",
     "build:browserify": "browserify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js",
     "build:bower": "cd ./dawiki-wiki && ../node_modules/bower/bin/bower install",
-    "test": "standard ./dawiki-wiki/src/**/**.js ./dawiki-wiki/src/*.js ./src/*.js --fix",
+    "test": "./node_modules/.bin/run-s test:**",
+    "test:ava": "ava test/**/*.js",
+    "test:standard": "standard ./dawiki-wiki/src/**/**.js ./dawiki-wiki/src/*.js ./client/*.js ./server/*.js ./test/**/**.js --fix",
     "watch": "watchify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js -v"
   },
   "dependencies": {
+    "@google-cloud/datastore": "^1.0.7",
     "argv": "^0.0.2",
     "body-parser": "^1.17.2",
     "bower": "^1.8.0",
