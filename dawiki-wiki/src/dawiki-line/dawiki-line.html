@@ -26,7 +26,6 @@
       }
 
       #editor, #coloredEditor {
-        font-family: 'Noto Sans Japanese', sans-serif;
         display: none;
         color: rgba(0, 0, 0, 0);
         border: 0;
@@ -75,8 +74,8 @@
         margin-bottom: 12px;
       }
 
-      .text {
-        height: 100%;
+      .title .text {
+        min-height: 38px;
       }
 
       textarea:focus {
@@ -281,23 +280,15 @@
       _rawChanged (newValue, oldValue) {
         oldValue = oldValue || '';
         var editor = this.$.editor;
-        // lineに編集中の内容を伝える
+        // view lineに編集中の内容を伝える
         this._spans(newValue);
-
         // coloredEditorに編集中の内容を伝える
         this._updateColoredEditorContents(newValue, oldValue);
-        
-        var text = this.$.coloredEditor.querySelector('.text');
-        if (text) {
-          console.log(text.offsetHeight, text.innerText)
-          var h = this.$.coloredEditor.querySelector('.text').offsetHeight;
-          dawiki.css(this.$.editor, {
-            height: `${h}px`
-          });
-          dawiki.css(this.$.coloredEditor, {
-            height: `${h}px`
-          });
-        }
+        // 編集エリアの高さを更新する
+        this._fitEditorHeight();
+
+        // title行の変更である場合はURL等を更新する
+        if (this.istitle) this.fireUpdatePageMetaData({title: newValue});
 
         if (editor.value === newValue) return;
         editor.value = newValue;
@@ -324,6 +315,19 @@
         this.$.editor.placeholder = 'Untitled'
       }
 
+      _fitEditorHeight () {
+        var text = this.$.coloredEditor.querySelector('.text');
+        if (text) {
+          var h = this.$.coloredEditor.querySelector('.text').offsetHeight;
+          dawiki.css(this.$.editor, {
+            height: `${h}px`
+          });
+          dawiki.css(this.$.coloredEditor, {
+            height: `${h}px`
+          });
+        }
+      }
+
       /* イベント発火関数 */
       fireCombineWithLine (prev=true, next=false, body='') {
         if ((prev && next) || (!prev && !next)) return;
@@ -340,6 +344,7 @@
       }
 
       fireInsertLine (caretPos, body) {
+        // to dawiki-paper
         this.dispatchEvent(new CustomEvent('insertLine', {
           detail: {
             line_after: this,
@@ -352,6 +357,7 @@
       }
 
       fireupdateLineHighlight (prev=false, next=false, caretPosition=0) {
+        // to dawiki-paper
         this.dispatchEvent(new CustomEvent('updateLineHighlight', {
           detail: {
             line : this,
@@ -363,6 +369,18 @@
           composed: true
         }));
       };
+
+      fireUpdatePageMetaData (contents) {
+        // to dawiki-paper
+        this.dispatchEvent(new CustomEvent('updatePageMetaData', {
+          detail: {
+            line : this,
+            contents: contents
+          },
+          bubbles: true, 
+          composed: true
+        }));
+      }
     }
 
     window.customElements.define(DawikiLine.is, DawikiLine);

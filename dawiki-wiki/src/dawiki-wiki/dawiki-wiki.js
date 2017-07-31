@@ -15,7 +15,7 @@ window.dawiki.spans = (str, caret = null) => {
       $span.addClass('n')
     }
     if (c === '[' || c === ']') {
-      $span.addClass('b');
+      $span.addClass('b')
     }
     $line.append($span)
   }

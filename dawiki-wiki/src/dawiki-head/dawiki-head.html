@@ -19,7 +19,7 @@
         background-color: #FFC107;
       }
 
-      .wiki-title {
+      #title {
         display: inline-block;
         font-size: 18px;
         padding: 11px;
@@ -28,7 +28,7 @@
       }
     </style>
     <div class="header">
-      <div class="wiki-title">[[wikiTitle]]</div>
+      <div id="title"></div>
     </div>
   </template>
 
@@ -38,8 +38,16 @@
       static get is () { return 'dawiki-head' }
       static get properties () {
         return {
-          wikiTitle: {type: String, value:"dawiki"}
+          project: {
+            type: String, 
+            value:"dawiki",
+            observer: '_projectNameChanged'
+          }
         }
+      }
+
+      _projectNameChanged (newValue, oldValue) {
+        this.$.title.innerText = newValue;
       }
     }
     window.customElements.define(DawikiHead.is, DawikiHead);
