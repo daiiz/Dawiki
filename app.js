@@ -9,10 +9,18 @@ app.use(bodyParser.json());
 app.use('/static', express.static('static'));
 app.use('/dawiki-wiki', express.static('dawiki-wiki'));
 
+// Settings for ejs
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
 http.listen(PORT, function () {
   console.log(`Example app listening on port ${PORT}!`)
 });
 
-app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/index.html');
+app.get('/:project/:page', function (req, res) {
+  res.render('index', {
+    project_name: req.params.project,
+    page_title: req.params.page
+  })
 });
+

@@ -8,13 +8,14 @@
   "private": true,
   "scripts": {
     "start": "node-dev app.js",
-    "test": "standard ./dawiki-wiki/src/**/**.js ./dawiki-wiki/src/*.js --fix",
+    "test": "standard ./dawiki-wiki/src/**/**.js ./dawiki-wiki/src/*.js ./src/*.js --fix",
     "watch": "watchify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js -v"
   },
   "dependencies": {
     "argv": "^0.0.2",
     "body-parser": "^1.17.2",
     "diff": "^3.3.0",
+    "ejs": "^2.5.7",
     "express": "^4.15.3",
     "jquery": "^3.2.1",
     "socket.io": "^2.0.3",

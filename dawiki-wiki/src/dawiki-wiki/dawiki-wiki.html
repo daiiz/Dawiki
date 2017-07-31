@@ -9,7 +9,7 @@
         padding-top: 50px;
       }
     </style>
-    <dawiki-paper></dawiki-paper>
+    <dawiki-paper id="page"></dawiki-paper>
   </template>
 
   <script src="../../dist/bundle.js"></script>
@@ -18,11 +18,20 @@
       static get is () { return 'dawiki-wiki' }
       static get properties () {
         return {
-          prop1: {
+          pagetitle: {
             type: String,
-            value: 'dawiki-wiki'
+            value: 'Untitled',
+            observer: '_titleChanged'
           }
         }
+      }
+
+      ready () {
+        super.ready();
+      }
+
+      _titleChanged (newValue, oldValue) {
+        this.$.page.pagetitle = newValue;
       }
     }
     window.customElements.define(DawikiWiki.is, DawikiWiki);

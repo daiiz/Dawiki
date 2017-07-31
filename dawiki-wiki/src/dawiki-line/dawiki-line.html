@@ -12,44 +12,60 @@
         width: 100%;
       }
 
-      #line, #editor, #editorShadow {
+      #line, #editor, #coloredEditor {
         position: relative;
         top: 0;
         font-family: 'Noto Sans Japanese', sans-serif;
         color: #555;
         font-size: 15px;
         line-height: 25px;
-        padding-left: 4px;
+        margin-left: 4px;
         min-height: 25px;
         display: block;
+        width: 100%;
       }
 
-      #editor, #editorShadow {
-        font-family: 'Noto Sans Japanese', sans-serif;
+      #editor, #coloredEditor {
         display: none;
-        /* #999などで着色するとデバッグしやすい */
-        color: #999;
-        color: rgba(0, 0, 0, 0) !important;
-        width: 100%;
+        color: rgba(0, 0, 0, 0);
         border: 0;
         box-sizing: border-box;
         padding: 0;
-        margin-left: 4px;
         resize: none;
         caret-color: #555;
       }
 
-      #editorShadow {
+      #coloredEditor {
+        /* z-index: 90; */
         top: 0;
-        color: red !important;
-        color: #555 !important;
+        display: none;
+        background-color: rgba(0, 0, 0, 0) !important;
+      }
+
+      #coloredEditor .c {
+        /* colorをredなどにするとdebugしやすい */
+        /* color: goldenrod !important;*/
+        color: #555;
+        z-index: 110;
+        position: sticky;
+        background-color: #fff;
+      }
+
+      #coloredEditor .n {
         display: none;
       }
 
+      #coloredEditor .b {
+        color: #ed8362;
+      }
+
       #editor {
+        z-index: 100;
         position: absolute !important;
         top: 0;
+        color: #555 !important;
         background-color: rgba(0, 0, 0, 0) !important;
+        overflow: hidden;
       }
 
       .title {
@@ -58,15 +74,22 @@
         margin-bottom: 12px;
       }
 
+      .title .text {
+        min-height: 38px;
+      }
+
       textarea:focus {
         outline: 0;
         overflow: hidden;
       }
     </style>
-    <div id="line" on-click="_fireupdateLineHighlight"></div>
-    <div id="editorShadow"></div>
-    <textarea id="editor" type="text" spellcheck="false" 
-      on-keydown="handleKeydown" on-keyup="updateRaw" on-keypress="updateRawEnter"></textarea>
+    <div id="line" on-click="_fireupdateLineHighlight" class="base"></div>
+    <div>
+      <div id="coloredEditor" on-click="_fireupdateLineHighlight" class="base">
+      </div>
+      <textarea id="editor" type="text" spellcheck="false" on-click="_editorClicked"
+        on-keydown="handleKeydown" on-keyup="updateRaw"></textarea>
+    </div>
   </template>
 
   <script src="../../dist/bundle.js"></script>
@@ -89,7 +112,7 @@
           hash   : {type: String, value: ''},
           istitle: {type: Boolean, value: false},
           /* IMEに矢印キーを乗っ取られているときは矢印機能をロックする */
-          arrowLocked: {
+          workingIME: {
             type: Boolean,
             value: false
           },
@@ -106,48 +129,65 @@
         super.ready();
         this.$.editor.value = this.raw;
         dawiki.initTextarea(this.$.editor);
-        if (JSON.parse(this.istitle)) {
-          dawiki.addClass(this.$.line, ['title']);
-          dawiki.addClass(this.$.editor, ['title']);
-          dawiki.addClass(this.$.editorShadow, ['title']);
+        if (this.istitle) {
+          this._initTitle();
         }
       }
 
       handleKeydown (e) {
         var editor = this.$.editor;
         var txt = editor.value;
-        var diff = Math.abs(this.raw - txt);
-        var keyCode = e.keyCode;
-        // IMEの候補を矢印キーで操作しているときは keyCode=229
-        console.info('>>>', keyCode)
-        if (keyCode === 229) {
-          this.arrowLocked = true;
-        }else {
-          this.arrowLocked = false;
-          this.raw = txt;
-          if (keyCode === 'Backspace') {
-            // バックスペース長押し
-            if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
-              this.fireCombineWithLine(true, false, this.raw);
-            }
+        var diff = Math.abs(this.raw.length - txt.length);
+        var f = (txt.length === 0 || diff === 0);
+        // 新たな行の追加要求する
+        if (dawiki.isEnter(e) && e.keyCode !== 229) {
+          this.insertNewLine();
+          return;
+        }
+
+        // IMEの候補を操作しているときはkeyCode=229
+        if (!dawiki.isEnter(e) && e.keyCode === 229) {
+          this.workingIME = true;
+          return;
+        }
+
+        this.workingIME = false;
+        this.raw = txt;
+        if (dawiki.isBackspace(e)) {
+          if (this._getCaretPosition() === 0 && f) {
+            e.preventDefault();
+            // 直上の行と統合してカーソルを移動
+            this.fireCombineWithLine(true, false, this.raw);
+          }
+        }else if (dawiki.isArrowLeft(e)) {
+          this._updateColoredEditorContents();
+          if (this._getCaretPosition() === 0 && f) {
+            e.preventDefault();
+            // 前の行の末尾にカーソルを移動
+            this.fireupdateLineHighlight(true, false, -1);
+          }
+        }else if (dawiki.isArrowRight(e)) {
+          this._updateColoredEditorContents();
+          if (this._getCaretPosition() === this.$.editor.value.length && f) {
+            e.preventDefault();
+            // 次の行の先頭にカーソルを移動
+            this.fireupdateLineHighlight(false, true, 0);
           }
         }
       }
 
+      // keyup
       updateRaw (e) {
         var editor = this.$.editor;
-        var keyCode = e.code;
         var txt = editor.value;
         var diff = Math.abs(this.raw - txt);
 
-        if (!this.arrowLocked) {
-          if (keyCode === 'ArrowDown') {
+        if (!this.workingIME) {
+          if (dawiki.isArrowDown(e)) {
             this._setCaretPosition(this.raw.length);  //
             this.fireupdateLineHighlight(false, true, this._getCaretPosition());
             return;
-          }
-
-          if (keyCode === 'ArrowUp') {
+          }else if (dawiki.isArrowUp(e)) {
             this._setCaretPosition(this.raw.length);  //
             this.fireupdateLineHighlight(true, false, this._getCaretPosition());
             return;
@@ -155,34 +195,23 @@
         }
         
         this.raw = txt;
-        if (keyCode === 'Backspace') {
-          if (this._getCaretPosition() === 0 && (txt.length > 0 || diff === 0)) {
-            this.fireCombineWithLine(true, false, this.raw);
-          }
-        }
+        this._updateColoredEditorContents();
       }
 
-      updateRawEnter (e) {
+      insertNewLine () {
         var editor = this.$.editor;
-        var keyCode = e.code;
         var txt = editor.value;
-
-        if (keyCode === 'Enter') {
-          // 新たな行の追加要求する
-          var caretPos = this._getCaretPosition();
-          var tailTxt = txt.substring(caretPos, txt.length);
-          var headTxt = txt.substring(0, caretPos);
-          this.raw = headTxt;
-          this.fireInsertLine(caretPos, tailTxt);
-          return;
-        }
-
-        this.raw = txt;
+        // 新たな行の追加要求する
+        var caretPos = this._getCaretPosition();
+        var tailTxt = txt.substring(caretPos, txt.length);
+        var headTxt = txt.substring(0, caretPos);
+        this.raw = headTxt;
+        this.fireInsertLine(caretPos, tailTxt);
       }
 
       setEditMode (caret=0) {
         var editor = this.$.editor;
-        var editorShadow = this.$.editorShadow;
+        var coloredEditor = this.$.coloredEditor;
         var h = this.$.line.offsetHeight;
 
         dawiki.css(this.$.line, { display: 'none' });
@@ -190,20 +219,21 @@
           height: h + 'px',
           display: 'block'
         });
-        dawiki.css(editorShadow, {
+        dawiki.css(coloredEditor, {
           height: h + 'px',
           display: 'block'
         });
         editor.focus();
         this._setCaretPosition(caret);
+        this._updateColoredEditorContents();
       }
 
       setViewMode () {
         var editor = this.$.editor;
-        var editorShadow = this.$.editorShadow;
+        var coloredEditor = this.$.coloredEditor;
         editor.blur();
         dawiki.css(editor, { display: 'none' });
-        dawiki.css(editorShadow, { display: 'none' });
+        dawiki.css(coloredEditor, { display: 'none' });
         dawiki.css(this.$.line, { display: 'block' });
       }
 
@@ -214,6 +244,10 @@
 
       _setCaretPosition (pos=0) {
         var editor = this.$.editor;
+        if (pos === -1) {
+          // 末尾を指す
+          pos = editor.value.length;
+        }
         pos = Math.max(pos, 0);
         editor.selectionStart = pos;
         editor.selectionEnd = pos;
@@ -225,7 +259,13 @@
       }
 
       _fireupdateLineHighlight (e) {
-        this.fireupdateLineHighlight(false, false, this.raw.length);
+        var closestChar = dawiki.closest(e.target, '.c');
+        var base = dawiki.closest(closestChar, '.base');
+        var pos = this.raw.length;
+        if (closestChar) {
+          pos = Math.max(0, dawiki.index(closestChar, base.querySelectorAll('.c')));
+        }
+        this.fireupdateLineHighlight(false, false, pos);
       }
 
       /* prop observers */
@@ -240,35 +280,52 @@
       _rawChanged (newValue, oldValue) {
         oldValue = oldValue || '';
         var editor = this.$.editor;
+        // view lineに編集中の内容を伝える
         this._spans(newValue);
+        // coloredEditorに編集中の内容を伝える
+        this._updateColoredEditorContents(newValue, oldValue);
+        // 編集エリアの高さを更新する
+        this._fitEditorHeight();
 
-        // editorShadowに編集中の内容を伝える
-        var diffChars = dawiki.diff(oldValue, newValue);
-        var ptr = 0;
-        //console.info(diffChars);
-        // diffChars.forEach(diff => {
-        //   if (diff.added) {
-        //     var val = diff.value.split('');
-        //     val.forEach(c => {
-        //       dawiki.append(this.$.editorShadow, `<span class="c">${c}</span>`);
-        //     });
-        //     ptr += diff.count;
-        //   }else if (diff.removed) {
-        //     var chars = dawiki.find(this.$.editorShadow, '.c');
-        //     for (var i = 0; i < diff.count; i++) {
-        //       dawiki.addClass(chars[ptr + i], ['c-rm']);
-        //     }
-        //     //console.log(chars)
-        //     dawiki.remove(this.$.editorShadow, '.c-rm');
-        //   }else {
-        //     ptr += diff.count;
-        //   }
-        // });
+        // title行の変更である場合はURL等を更新する
+        if (this.istitle) this.fireUpdatePageMetaData({title: newValue});
 
-        this.$.editorShadow.innerHTML = '';
-        this.$.editorShadow.appendChild(dawiki.spans(newValue));
         if (editor.value === newValue) return;
         editor.value = newValue;
+      }
+
+      _editorClicked (e) {
+        this._updateColoredEditorContents();
+      }
+
+      _updateColoredEditorContents (newValue=null, oldValue=null) {
+        if (newValue === null) newValue = this.raw;
+        var caret = this._getCaretPosition();
+        if (oldValue !== null && oldValue.length === 0) caret = newValue.length;
+        if (!this.workingIME) {
+          this.$.coloredEditor.innerHTML = '';
+          this.$.coloredEditor.appendChild(dawiki.spans(newValue, caret));
+        }
+      }
+
+      _initTitle () {
+        dawiki.addClass(this.$.line, ['title']);
+        dawiki.addClass(this.$.editor, ['title']);
+        dawiki.addClass(this.$.coloredEditor, ['title']);
+        this.$.editor.placeholder = 'Untitled'
+      }
+
+      _fitEditorHeight () {
+        var text = this.$.coloredEditor.querySelector('.text');
+        if (text) {
+          var h = this.$.coloredEditor.querySelector('.text').offsetHeight;
+          dawiki.css(this.$.editor, {
+            height: `${h}px`
+          });
+          dawiki.css(this.$.coloredEditor, {
+            height: `${h}px`
+          });
+        }
       }
 
       /* イベント発火関数 */
@@ -287,6 +344,7 @@
       }
 
       fireInsertLine (caretPos, body) {
+        // to dawiki-paper
         this.dispatchEvent(new CustomEvent('insertLine', {
           detail: {
             line_after: this,
@@ -299,6 +357,7 @@
       }
 
       fireupdateLineHighlight (prev=false, next=false, caretPosition=0) {
+        // to dawiki-paper
         this.dispatchEvent(new CustomEvent('updateLineHighlight', {
           detail: {
             line : this,
@@ -310,6 +369,18 @@
           composed: true
         }));
       };
+
+      fireUpdatePageMetaData (contents) {
+        // to dawiki-paper
+        this.dispatchEvent(new CustomEvent('updatePageMetaData', {
+          detail: {
+            line : this,
+            contents: contents
+          },
+          bubbles: true, 
+          composed: true
+        }));
+      }
     }
 
     window.customElements.define(DawikiLine.is, DawikiLine);

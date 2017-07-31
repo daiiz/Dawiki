@@ -21,6 +21,7 @@
         background-color: #fff;
         margin: auto;
         box-sizing: border-box;
+        min-height: 60px !important;
       }
 
       #paper {
@@ -31,10 +32,10 @@
     <div class="stage">
       <div id="page" class="mdl-card mdl-shadow--2dp">
         <div id="paper">
-          <dawiki-line id="01" raw="タイトル" istitle></dawiki-line>
-          <dawiki-line id="10" raw="ここはdaiiz [apps]"></dawiki-line>
+          <dawiki-line id="title" raw="タイトル" istitle></dawiki-line>
+          <!-- <dawiki-line id="10" raw="ここはdaiiz [apps]"></dawiki-line>
           <dawiki-line id="20" raw="[Wiki]づくりに挑戦中"></dawiki-line>
-          <dawiki-line id="30" raw="どうしても[Scrapbox]のデザインを意識してしまう <script>alert('hello')</script>"></dawiki-line> 
+          <dawiki-line id="30" raw="どうしても[Scrapbox]のデザインを意識してしまう <script>alert('hello')</script>"></dawiki-line>  -->
         </div>
       </div>
     </div>
@@ -49,6 +50,11 @@
           // 編集中のLine
           editing: {
             value: null
+          },
+          pagetitle: {
+            type: String,
+            value: 'Untitled',
+            observer: '_titleChanged'
           }
         }
       }
@@ -56,11 +62,15 @@
       ready () {
         super.ready();
         this._addEventListeners();
+        this.$.title.fireupdateLineHighlight(false, false, -1);
       }
 
       removeLine (line, autoUpdateHighlight=true) {
         if(autoUpdateHighlight) dawiki.nextElem(line).fireupdateLineHighlight(false, false);
-        line.remove();
+        // タイトル行でないことを確認してから消す
+        if (!line.istitle) {
+          line.remove();
+        }
       }
 
       _addEventListeners () {
@@ -86,10 +96,25 @@
           }
           var caretPos = line.raw.length;
           line.raw += det.body;
+          console.log('%%', line.raw)
           self.removeLine(det.line, false);
           line.fireupdateLineHighlight(false, false, caretPos);
         });
 
+        // ページのメタデータを更新する
+        dawiki.addEventListener('updatePageMetaData', e => {
+          var contents = e.detail.contents;
+          
+          if (contents.title) {
+            window.document.title = contents.title;
+            window.history.replaceState('', '', encodeURIComponent(contents.title));
+          }
+        });
+      }
+
+      _titleChanged (newValue, oldValue) {
+        console.log(88, this.pagetitle)
+        this.$.title.raw = newValue;
       }
     }
     window.customElements.define(DawikiPaper.is, DawikiPaper);
