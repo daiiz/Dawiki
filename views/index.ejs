@@ -17,7 +17,11 @@
     <link rel="import" href="/dawiki-wiki/src/dawiki-head/dawiki-head.html">
   </head>
   <body>
-    <dawiki-head></dawiki-head>
-    <dawiki-wiki></dawiki-wiki>
+    <dawiki-head project="<%= project_name %>"></dawiki-head>
+    <dawiki-wiki pagetitle="<%= page_title %>"></dawiki-wiki>
+
+    <script>
+      wiki.initWikiPage();
+    </script>
   </body>
 </html>
