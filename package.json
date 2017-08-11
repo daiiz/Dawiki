@@ -14,12 +14,15 @@
     "start": "node app.js",
     "start:dev": "node-dev app.js",
     "build": "./node_modules/.bin/run-s build:**",
+    "build:babel": "./node_modules/.bin/babel src/ --out-dir build/ --minified --source-maps false",
     "build:browserify": "browserify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js",
     "build:bower": "cd ./dawiki-wiki && ../node_modules/bower/bin/bower install",
     "test": "./node_modules/.bin/run-s test:**",
     "test:ava": "ava test/**/*.js",
     "test:standard": "standard ./dawiki-wiki/src/**/**.js ./dawiki-wiki/src/*.js ./client/*.js ./server/*.js ./test/**/**.js --fix",
-    "watch": "watchify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js -v"
+    "watch": "./node_modules/.bin/run-p watch:**",
+    "watch:babel": "npm run build:babel -- --watch",
+    "watch:browserify": "watchify dawiki-wiki/src/index.js -o dawiki-wiki/dist/bundle.js -v"
   },
   "dependencies": {
     "@google-cloud/datastore": "^1.0.7",
