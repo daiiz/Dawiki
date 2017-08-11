@@ -3,7 +3,6 @@ const diff = require('diff')
 const ENTER = 13
 const TAB = 9
 
-window.a = () => { console.log(888) }
 window.dawiki = window.dawiki || {}
 
 window.dawiki.spans = (str, caret = null) => {

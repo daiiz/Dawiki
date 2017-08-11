@@ -22,6 +22,12 @@
             type: String,
             value: 'Untitled',
             observer: '_titleChanged'
+          },
+
+          lines: {
+            type: Array,
+            value: null,
+            observer: '_linesChanged'
           }
         }
       }
@@ -32,6 +38,11 @@
 
       _titleChanged (newValue, oldValue) {
         this.$.page.pagetitle = newValue;
+      }
+
+      _linesChanged (newValue, oldValue) {
+        // Array of Line Objects
+        console.log(newValue)
       }
     }
     window.customElements.define(DawikiWiki.is, DawikiWiki);
