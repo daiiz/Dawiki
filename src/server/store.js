@@ -19,7 +19,7 @@ export class Store {
   // 指定されたLineID行の直後に新規の行を挿入する
   insertLine(raw = '', page = null, insertAfter = '') {
     const self = this
-    const p = new Promise((resolve, reject) => {
+    const p = new Promise(async (resolve, reject) => {
       if (!validate.lengthGtZero([page.page_id, insertAfter])) {
         resolve({})
         return
@@ -46,18 +46,9 @@ export class Store {
       }
 
       // Lineを作成
-      self._createLine(line).then(line => {
-        // Pageを更新
-        var key = datastore.key(['Page', page.page_id])
-        page.lines = lines
-        datastore.save({
-          key: key,
-          data: page
-        }, (err, entity) => {
-          if (err) console.log('<', err)
-          resolve({line_id: line.line_id})
-        })
-      })
+      await self._createLine(line)
+      await self._updateObject('Page', page)
+      resolve({line_id: line.line_id})
     })
     return p
   }
@@ -68,7 +59,7 @@ export class Store {
         resolve({})
         return
       }
-      var key = datastore.key('Line')
+      var key = datastore.key(['Line', line.line_id])
       datastore.save({
         key: key,
         data: line
@@ -78,8 +69,33 @@ export class Store {
           reject(err)
           return
         }
-        console.log(`new saved: ${line.line_id}`)
+        console.log(`new saved: Line_${line.line_id}`)
         resolve(line)
+      })
+    })
+    return p
+  }
+
+  async _updateObject(kind, obj) {
+    const p = new Promise((resolve, reject) => {
+      var objId = obj[`${kind.toLowerCase()}_id`]
+      if (!validate.lengthGtZero([kind, objId])) { 
+        resolve({})
+        return
+      }
+
+      var key = datastore.key([kind, objId])
+      datastore.save({
+        key: key,
+        data: obj
+      }, err => {
+        if (err) {
+          console.log(err)
+          reject(err)
+          return
+        }
+        console.log(`updated  : ${kind}_${objId}`)
+        resolve(obj)
       })
     })
     return p
@@ -121,7 +137,7 @@ export class Store {
               reject(err)
               return
             }
-            console.log(`new saved: ${page.page_id}`)
+            console.log(`new saved: Page_${page.page_id}`)
             resolve(page)
           })
         })
