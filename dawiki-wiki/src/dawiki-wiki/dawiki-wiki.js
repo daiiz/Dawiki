@@ -65,3 +65,11 @@ window.dawiki.isArrowLeft = (e) => {
 window.dawiki.isArrowRight = (e) => {
   return (e.code === 'ArrowRight' || e.keyCode === 39)
 }
+
+window.dawiki.isArrow = (e) => {
+  return (
+    (window.dawiki.isArrowRight(e)) ||
+    (window.dawiki.isArrowLeft(e))  ||
+    (window.dawiki.isArrowUp(e)) ||
+    (window.dawiki.isArrowDown(e)))
+}

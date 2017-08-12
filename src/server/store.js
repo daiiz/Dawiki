@@ -42,10 +42,9 @@ export class Store {
           page_id: page.page_id,
           raw: raw
         })
-        lines.push(line.line_id) //いまだけ
+        lines.push(line.line_id) //いまだけ末尾追加
       }
 
-      // Lineを作成
       await self._createLine(line)
       await self._updateObject('Page', page)
       resolve({line_id: line.line_id})
@@ -76,7 +75,7 @@ export class Store {
     return p
   }
 
-  async _updateObject(kind, obj) {
+  _updateObject(kind, obj) {
     const p = new Promise((resolve, reject) => {
       var objId = obj[`${kind.toLowerCase()}_id`]
       if (!validate.lengthGtZero([kind, objId])) { 
@@ -183,6 +182,29 @@ export class Store {
           if (entities.length === 0) resolve({})
           var page = entities[0]
           resolve(page)
+        }
+      })
+    })
+    return p
+  }
+
+  fetchLine(pageId = '', lineId = '') {
+    const p = new Promise((resolve, reject) => {
+      if (!validate.lengthGtZero([pageId, lineId])) {
+        resolve({})
+        return
+      }
+      var query = datastore.createQuery('Line')
+      query.filter('page_id', pageId)
+      query.filter('line_id', lineId)
+      query.limit(1)
+      datastore.runQuery(query, (err, entities) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (entities.length === 0) resolve({})
+          var line = entities[0]
+          resolve(line)
         }
       })
     })

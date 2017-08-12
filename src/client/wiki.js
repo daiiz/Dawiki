@@ -1,3 +1,4 @@
+// APIを呼び出す場所
 const request = require('superagent')
 const validate = require('../shared/validate')
 // params
@@ -34,7 +35,6 @@ exports.insertLine = (raw='', lineAfter=null, resolve=function(){}) => {
   var pageId = WiKi.pageId
   var lineIdAfter = lineAfter.id
   if (lineIdAfter === 'title') lineIdAfter = 'HEAD'
-  console.log('>>', pageId, raw, lineIdAfter)
   if (validate.lengthGtZero([projectName, title, pageId, lineIdAfter])) {
     request
       .post(`/api/line/insert/${projectName}/${title}`)
@@ -44,7 +44,32 @@ exports.insertLine = (raw='', lineAfter=null, resolve=function(){}) => {
         line_after: lineIdAfter
       })
       .end((err, res) => {
-        var line = res.body
+        var line = res.body.line
+        if (resolve) resolve(line.line_id, line.raw)
+      })
+  } else {
+    if (resolve) resolve({})
+  }
+}
+
+exports.updateLineRaw = (raw, lineId, resolve = function () { }) => {
+  var projectName = WiKi.projectName
+  var title = WiKi.title
+  var pageId = WiKi.pageId
+  if (+lineId === -1) {
+    if (resolve) resolve({})
+  }
+  if (validate.lengthGtZero([projectName, title, pageId, lineId])) { 
+    request
+      .post(`/api/line/update/${projectName}/${title}`)
+      .send({
+        page_id: pageId,
+        line_id: lineId,
+        raw_text: raw
+      })
+      .end((err, res) => {
+        var line = res.body.line
+        //console.log(line)
         if (resolve) resolve(line.line_id, line.raw)
       })
   } else {

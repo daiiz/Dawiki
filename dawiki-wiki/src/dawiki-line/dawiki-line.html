@@ -183,6 +183,9 @@
         var diff = Math.abs(this.raw - txt);
 
         if (!this.workingIME) {
+          if (!dawiki.isArrow(e)) {
+            wiki.updateLineRaw(this.raw, this.id, (lineId, raw) => {})
+          }
           if (dawiki.isArrowDown(e)) {
             this._setCaretPosition(this.raw.length);  //
             this.fireupdateLineHighlight(false, true, this._getCaretPosition());
@@ -286,6 +289,9 @@
         this._updateColoredEditorContents(newValue, oldValue);
         // 編集エリアの高さを更新する
         this._fitEditorHeight();
+
+        if (!this.istitle) {
+        }
 
         // title行の変更である場合はURL等を更新する
         if (this.istitle) this.fireUpdatePageMetaData({title: newValue});
