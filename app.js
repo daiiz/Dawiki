@@ -47,16 +47,9 @@ app.post('/api/:project/:page', (req, res) => {
   wiki.wikiPage(projectId = projectId, title = title).then(async page => {
     var rows = []
     // Lineを展開する
-    // 一括Fetchのほうがいいかもしれない
-    var lines = page.lines
-    for (var i = 0; i < lines.length; i++) {
-      var lineId = lines[i]
-      await wiki.wikiLine(page.page_id, lineId).then(row => {
-        delete row.links
-        rows.push(row)
-      })
-    }
-    console.log(rows)  /// ここが空になってしまう
+    await wiki.wikiLines(page.page_id).then(lines => {
+      rows = lines
+    })
     res.send({page: page, lines: rows});
   })
 })

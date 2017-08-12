@@ -24,6 +24,17 @@ exports.wikiLine = (pageId = '', lineId = '') => {
   return p
 }
 
+exports.wikiLines = (pageId = '') => {
+  var projectId = 0
+  var p = new Promise((resolve, reject) => {
+    var store = new Store(projectId);
+    store.fetchLines(pageId).then(lines => {
+      resolve(lines)
+    })
+  })
+  return p
+}
+
 exports.insertNewLine = (raw = '', pageId = '', insertAfterLineId = '') => {
   var projectId = 0
   var p = new Promise((resolve, reject) => {

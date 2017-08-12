@@ -211,6 +211,27 @@ export class Store {
     return p
   }
 
+  fetchLines(pageId = '') {
+    const p = new Promise((resolve, reject) => {
+      if (!validate.lengthGtZero([pageId])) {
+        resolve({})
+        return
+      }
+      var query = datastore.createQuery('Line')
+      query.filter('page_id', pageId)
+      query.limit(1000)
+      datastore.runQuery(query, (err, entities) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (entities.length === 0) resolve({})
+          resolve(entities)
+        }
+      })
+    })
+    return p
+  }
+
   runSampleQuery() {
     const p = new Promise((resolve, reject) => {
       var query = datastore.createQuery('BotUser')
