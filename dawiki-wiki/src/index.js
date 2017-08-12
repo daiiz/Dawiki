@@ -1,5 +1,5 @@
 require('./dawiki-wiki/dawiki-wiki')
-window.wiki = require('../../src/wiki')
+window.wiki = require('../../build/client/wiki')
 
 const $ = require('jquery')
 

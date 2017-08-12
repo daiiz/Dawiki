@@ -3,17 +3,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const http = require('http').Server(app);
+const wiki = require('./build/server/wiki')
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use('/static', express.static(__dirname + '/static'));
 app.use('/dawiki-wiki', express.static(__dirname + '/dawiki-wiki'));
-// app.use('/dawiki-wiki/dist', express.static('dawiki-wiki/dist'));
-// app.use('/dawiki-wiki/src', express.static('dawiki-wiki/src'));
-// app.use('/dawiki-wiki/dawiki-head', express.static('dawiki-wiki/dawiki-head'));
-// app.use('/dawiki-wiki/dawiki-line', express.static('dawiki-wiki/dawiki-line'));
-// app.use('/dawiki-wiki/dawiki-paper', express.static('dawiki-wiki/dawiki-paper'));
-// app.use('/dawiki-wiki/dawiki-wiki', express.static('dawiki-wiki/dawiki-wiki'));
 
 // Settings for ejs
 app.set('views', __dirname + '/views');
@@ -23,10 +18,48 @@ http.listen(PORT, function () {
   console.log(`Example app listening on port ${PORT}!`)
 });
 
-app.get('/:project/:page', function (req, res) {
+// WiKi page line APIs
+app.post('/api/line/insert/:project/:page', (req, res) => {
+  var title = req.params.page
+  var projectId = 0
+  // 挿入する直上のline_id
+  var lineAfter = req.body.line_after
+  var pageId = req.body.page_id
+  var rawText = req.body.raw_text
+  wiki.insertNewLine(rawText, pageId, lineAfter).then(line => {
+    res.send({line: line});
+  })
+})
+
+app.post('/api/line/update/:project/:page', async (req, res) => {
+  var pageId = req.body.page_id
+  var lineId = req.body.line_id
+  var rawText = req.body.raw_text
+  wiki.updateLine(pageId, lineId, rawText).then(line => {
+    res.send({line: line});
+  })
+})
+
+// WiKi page API
+app.post('/api/:project/:page', (req, res) => {
+  var title = req.params.page
+  var projectId = 0
+  wiki.wikiPage(projectId = projectId, title = title).then(async page => {
+    var rows = []
+    // Lineを展開する
+    await wiki.wikiLines(page.page_id).then(lines => {
+      rows = lines
+    })
+    res.send({page: page, lines: rows});
+  })
+})
+
+// WiKi page
+app.get('/:project/:page', (req, res) => {
   res.render('index', {
     project_name: req.params.project,
     page_title: req.params.page
   })
 });
+
 

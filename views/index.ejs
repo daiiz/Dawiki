@@ -18,10 +18,15 @@
   </head>
   <body>
     <dawiki-head project="<%= project_name %>"></dawiki-head>
-    <dawiki-wiki pagetitle="<%= page_title %>"></dawiki-wiki>
+    <dawiki-wiki id="wiki" pagetitle="<%= page_title %>"></dawiki-wiki>
 
     <script>
-      wiki.initWikiPage();
+      var [projectName, title] = wiki.initWikiPage();
+      wiki.fetchPage(projectName, title, data => {
+        console.log(data)
+        if (data.page.title === undefined) return;
+        document.querySelector('#wiki').lines = data.page.lines
+      })
     </script>
   </body>
 </html>

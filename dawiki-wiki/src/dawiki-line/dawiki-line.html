@@ -3,9 +3,8 @@
 <dom-module id="dawiki-line">
   <template>
     <style>
-      @import url(https://fonts.googleapis.com/earlyaccess/notosansjapanese.css);
       :host {
-        font-family: 'Noto Sans Japanese', sans-serif;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         display: block;
         position: relative;
         top: 0;
@@ -15,7 +14,7 @@
       #line, #editor, #coloredEditor {
         position: relative;
         top: 0;
-        font-family: 'Noto Sans Japanese', sans-serif;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         color: #555;
         font-size: 15px;
         line-height: 25px;
@@ -45,8 +44,8 @@
       #coloredEditor .c {
         /* colorをredなどにするとdebugしやすい */
         /* color: goldenrod !important;*/
-        color: #555;
-        z-index: 110;
+        color: transparent;
+        z-index: 100;
         position: sticky;
         background-color: #fff;
       }
@@ -56,11 +55,12 @@
       }
 
       #coloredEditor .b {
-        color: #ed8362;
+        background-color: #ed8362;
+        opacity: 0.3;
       }
 
       #editor {
-        z-index: 100;
+        z-index: 110;
         position: absolute !important;
         top: 0;
         color: #555 !important;
@@ -183,6 +183,9 @@
         var diff = Math.abs(this.raw - txt);
 
         if (!this.workingIME) {
+          if (!dawiki.isArrow(e)) {
+            wiki.updateLineRaw(this.raw, this.id, (lineId, raw) => {})
+          }
           if (dawiki.isArrowDown(e)) {
             this._setCaretPosition(this.raw.length);  //
             this.fireupdateLineHighlight(false, true, this._getCaretPosition());
@@ -286,6 +289,9 @@
         this._updateColoredEditorContents(newValue, oldValue);
         // 編集エリアの高さを更新する
         this._fitEditorHeight();
+
+        if (!this.istitle) {
+        }
 
         // title行の変更である場合はURL等を更新する
         if (this.istitle) this.fireUpdatePageMetaData({title: newValue});

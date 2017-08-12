@@ -33,9 +33,7 @@
       <div id="page" class="mdl-card mdl-shadow--2dp">
         <div id="paper">
           <dawiki-line id="title" raw="タイトル" istitle></dawiki-line>
-          <!-- <dawiki-line id="10" raw="ここはdaiiz [apps]"></dawiki-line>
-          <dawiki-line id="20" raw="[Wiki]づくりに挑戦中"></dawiki-line>
-          <dawiki-line id="30" raw="どうしても[Scrapbox]のデザインを意識してしまう <script>alert('hello')</script>"></dawiki-line>  -->
+          <!-- <dawiki-line id="10" raw="ここはdaiiz [apps]"></dawiki-line> -->
         </div>
       </div>
     </div>
@@ -79,10 +77,19 @@
         // 新しい行を指定位置に挿入
         dawiki.addEventListener('insertLine', e => {
           var dawikiLine = new DawikiLine();
-          dawikiLine.raw = e.detail.body;
-          dawikiLine.id = dawiki.rand();  // いまは適当でいい
-          dawiki.after(e.detail.line_after, dawikiLine);
+          var raw = e.detail.body
+          var lineAfter = e.detail.line_after
+          if (lineAfter.id === -1) {
+            // 直前の行挿入処理が未完
+            return
+          }
+          dawikiLine.raw = raw;
+          dawikiLine.id = -1;
+          dawiki.after(lineAfter, dawikiLine);
           dawikiLine.fireupdateLineHighlight(false, false);
+          window.wiki.insertLine(raw, lineAfter, (lineId) => {
+            dawikiLine.id = lineId
+          });
         });
 
         // 直上(または直下)の行と統合

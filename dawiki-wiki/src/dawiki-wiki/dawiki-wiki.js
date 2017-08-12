@@ -3,7 +3,6 @@ const diff = require('diff')
 const ENTER = 13
 const TAB = 9
 
-window.a = () => { console.log(888) }
 window.dawiki = window.dawiki || {}
 
 window.dawiki.spans = (str, caret = null) => {
@@ -11,7 +10,7 @@ window.dawiki.spans = (str, caret = null) => {
   for (var i = 0; i < str.length; i++) {
     var c = str.charAt(i)
     var $span = $(`<span class="c">${c}</span>`)
-    if (caret !== null && i >= caret - 2) {
+    if (caret !== null && i >= caret - 1) {
       $span.addClass('n')
     }
     if (c === '[' || c === ']') {
@@ -65,4 +64,12 @@ window.dawiki.isArrowLeft = (e) => {
 
 window.dawiki.isArrowRight = (e) => {
   return (e.code === 'ArrowRight' || e.keyCode === 39)
+}
+
+window.dawiki.isArrow = (e) => {
+  return (
+    (window.dawiki.isArrowRight(e)) ||
+    (window.dawiki.isArrowLeft(e))  ||
+    (window.dawiki.isArrowUp(e)) ||
+    (window.dawiki.isArrowDown(e)))
 }
