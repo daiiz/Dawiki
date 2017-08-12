@@ -10,7 +10,7 @@ window.dawiki.spans = (str, caret = null) => {
   for (var i = 0; i < str.length; i++) {
     var c = str.charAt(i)
     var $span = $(`<span class="c">${c}</span>`)
-    if (caret !== null && i >= caret - 2) {
+    if (caret !== null && i >= caret - 1) {
       $span.addClass('n')
     }
     if (c === '[' || c === ']') {
